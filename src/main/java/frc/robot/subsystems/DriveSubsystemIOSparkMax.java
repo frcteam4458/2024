@@ -115,9 +115,9 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
 
   @Override
   public void addVisionMeasurement(Pose3d pose, double timestamp) {
-    var gyroOffset = swerveDrive.getGyroRotation3d();
-    swerveDrive.addVisionMeasurement(pose.toPose2d(), timestamp);
-    swerveDrive.setGyroOffset(gyroOffset);
+    // var gyroOffset = swerveDrive.getGyroRotation3d();
+    // swerveDrive.addVisionMeasurement(pose.toPose2d(), timestamp);
+    // swerveDrive.setGyroOffset(gyroOffset);
     // swerveDrive.setGyroOffset(new Rotation3d(0, 0, swerveDrive.getYaw().getRadians()));
     Logger.recordOutput("Photon Pose", pose.toPose2d());
   }

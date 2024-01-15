@@ -56,6 +56,7 @@ public class VisionSubsystem extends SubsystemBase {
               PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
               camera,
               new Transform3d());
+      poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
 
       sim.addAprilTags(AprilTagFields.k2024Crescendo.loadAprilTagLayoutField());
     } catch (Exception e) {
@@ -67,9 +68,10 @@ public class VisionSubsystem extends SubsystemBase {
   public void periodic() {
     result = camera.getLatestResult();
 
-    targets = result.getTargets();
-    bestTarget = result.getBestTarget();
-
+    if(result.hasTargets()) {
+      targets = result.getTargets();
+      bestTarget = result.getBestTarget();
+    }
     poseEstimator.setReferencePose(DriveSubsystem.robotPose);
     estimatedPose = poseEstimator.update();
     // fpgaTimestamp = Timer.getFPGATimestamp();

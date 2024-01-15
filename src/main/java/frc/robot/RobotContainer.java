@@ -51,18 +51,7 @@ public class RobotContainer {
   private void configureBindings() {
     // SmartDashboard.putData("DriveChooser", driveChooser);
     driveSubsystem.setDefaultCommand(teleopCommand);
-
-    // driverController.a().whileTrue(
-    //   new SwerveTrajectoryCommand(
-    //     driveSubsystem,
-    //     new Pose2d(1.7, 7.6, Rotation2d.fromDegrees(90)),
-    //     new PathConstraints(3, 3, 6.28, 6.28),
-    //     0.0,
-    //     0//,
-    //     // "amp"
-    //   )
-    // );
-
+    
     driverController.a().whileTrue(
       new PIDAlign(
         driveSubsystem,
