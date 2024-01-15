@@ -18,6 +18,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void robotInit() {
+  
     if (Robot.isReal()) {
       Logger.addDataReceiver(new WPILOGWriter("/media/sda2"));
       Logger.addDataReceiver(new NT4Publisher());

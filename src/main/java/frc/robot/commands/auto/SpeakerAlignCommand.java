@@ -4,9 +4,11 @@
 
 package frc.robot.commands.auto;
 
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
 import org.littletonrobotics.junction.Logger;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 import com.pathplanner.lib.util.GeometryUtil;
 
@@ -27,6 +29,25 @@ public class SpeakerAlignCommand extends AlignCommand {
     
     @Override
     public Rotation2d getAngle(DriveSubsystem driveSubsystem, BooleanSupplier flip) {
-        return Rotation2d.fromDegrees(20);
+        var targetOptional = getTarget(7);
+        if(targetOptional.isPresent()) {
+            var target = targetOptional.get();
+            double yaw = Math.toRadians(target.getYaw());
+            return driveSubsystem.getPose().getRotation().plus(Rotation2d.fromRadians(yaw));
+        }
+        return new Rotation2d();
+    }
+
+    public Optional<PhotonTrackedTarget> getTarget(int targetid) {
+        if(visionSubsystem.hasTargets()) {
+            for(int i = 0; i < visionSubsystem.getTargets().size(); i++) {
+                int id = visionSubsystem.getTargets().get(i).getFiducialId();
+                if(id == targetId) {
+                    return Optional.of(visionSubsystem.getTargets().get(i));
+                }
+            }
+        }
+
+        return Optional.empty();
     }
 }

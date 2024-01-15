@@ -18,6 +18,7 @@ import frc.robot.commands.auto.AprilTagAlign;
 import frc.robot.commands.auto.Autos;
 import frc.robot.commands.auto.PIDAlign;
 import frc.robot.commands.auto.SpeakerAlign;
+import frc.robot.commands.auto.SpeakerAlignCommand;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.DriveSubsystemIOSparkMax;
 import frc.robot.subsystems.vision.VisionSubsystem;
@@ -96,9 +97,10 @@ public class RobotContainer {
     );
 
     driverController.leftBumper().whileTrue(
-      new AprilTagAlign(driveSubsystem, visionSubsystem,
-      7,
-      5.0, 0.0, 0.0)
+      new SpeakerAlignCommand(
+        driveSubsystem, visionSubsystem, RobotContainer::isRed,
+        10.0, 0.0, 0.0
+      )
     );
 
   }
