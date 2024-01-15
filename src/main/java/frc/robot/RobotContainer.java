@@ -106,6 +106,12 @@ public class RobotContainer {
       )
     );
 
+    driverController.leftBumper().whileTrue(
+      new AprilTagAlign(driveSubsystem, visionSubsystem,
+      7,
+      5.0, 0.0, 0.0)
+    );
+
   }
 
   public Command getAutonomousCommand() {

@@ -31,7 +31,6 @@ public class AprilTagAlign extends TeleopCommand {
         this.driveSubsystem = driveSubsystem;
         this.visionSubsystem = visionSubsystem;
         yawController = new PIDController(ap, ai, ad);
-        yawController.setP(0.1);
         this.targetId = id;
         SmartDashboard.putData(yawController);
     }
@@ -39,10 +38,7 @@ public class AprilTagAlign extends TeleopCommand {
     @Override
     public void initialize() {
         yawController.enableContinuousInput(-Math.PI, Math.PI);
-        var target = getTarget();
-        if(target.isPresent())
-            angle = Math.toRadians(target.get().getYaw());
-            yawController.setSetpoint(angle - driveSubsystem.getPose().getRotation().getRadians());
+        
 
     }
 
@@ -56,12 +52,19 @@ public class AprilTagAlign extends TeleopCommand {
         // Optional<PhotonTrackedTarget> targetOptional = getTarget();
         // if(targetOptional.isPresent()) {
         //     PhotonTrackedTarget target = targetOptional.get();
+
+            var target = getTarget();
+            if(target.isPresent()) {
+                angle = Math.toRadians(target.get().getYaw());
+                yawController.setSetpoint(driveSubsystem.getPose().getRotation().getRadians() + angle);
+            }
             double output = yawController.calculate(driveSubsystem.getPose().getRotation().getRadians());
             // Logger.recordOutput("Target Yaw", target.getYaw());
             Logger.recordOutput("April PID Output", output);
             Logger.recordOutput("April PID Setpoint", yawController.getSetpoint());
-            if(output > 1) output = 1;
-            if(output < -1) output = -1;
+            Logger.recordOutput("April PID Error", yawController.getPositionError());
+            // if(output > 1) output = 1;
+            // if(output < -1) output = -1;
             return output;
         // }
         // return 0;
