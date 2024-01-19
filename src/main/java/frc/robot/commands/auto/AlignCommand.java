@@ -13,8 +13,11 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import com.pathplanner.lib.util.GeometryUtil;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj2.command.ProfiledPIDCommand;
 import frc.robot.RobotContainer;
 import frc.robot.Constants.PositionConstants;
 import frc.robot.commands.TeleopCommand;
@@ -24,6 +27,7 @@ import frc.robot.subsystems.vision.VisionSubsystem;
 /** Add your docs here. */
 public class AlignCommand extends TeleopCommand {
     PIDController yawController;
+    public ProfiledPIDController profiledYawController;
     BooleanSupplier flip;
     DriveSubsystem driveSubsystem;
     VisionSubsystem visionSubsystem;
@@ -35,7 +39,9 @@ public class AlignCommand extends TeleopCommand {
         this.driveSubsystem = driveSubsystem;
         this.visionSubsystem = visionSubsystem;
         yawController = new PIDController(ap, ai, ad);
+        profiledYawController = new ProfiledPIDController(ap, ai, ad, new TrapezoidProfile.Constraints(0.05, 0.01));
         yawController.enableContinuousInput(-Math.PI, Math.PI);
+        profiledYawController.enableContinuousInput(-Math.PI, Math.PI);
         this.flip = flip;
     }
 
@@ -44,7 +50,7 @@ public class AlignCommand extends TeleopCommand {
         boolean flipPosition = flip.getAsBoolean();
 
         if(flipPosition) {
-            translation = GeometryUtil.flipFieldPosition(translation);
+            // translation = GeometryUtil.flipFieldPosition(translation);
         }
 
         Logger.recordOutput("X Diff", (driveSubsystem.getPose().getX() - translation.getX()));
@@ -61,16 +67,20 @@ public class AlignCommand extends TeleopCommand {
         }
     }
 
-    @Override
+    @Override   
     public void execute() {
         yawController.setSetpoint(getAngle(driveSubsystem, flip).getRadians());
         Logger.recordOutput("Yaw Diff", getAngle(driveSubsystem, flip));
-        super.execute(); 
+        super.execute();
     }
 
     @Override
     public double getOmega() {
-        return yawController.calculate(driveSubsystem.getPose().getRotation().getRadians());
+        double output = -yawController.calculate(driveSubsystem.getPose().getRotation().getRadians());;
+        if(output < -0.25) output = -0.25;
+        if(0.25 < output) output = 0.25;
+        Logger.recordOutput("Align Output", output);
+        return output;
     }
     
 }

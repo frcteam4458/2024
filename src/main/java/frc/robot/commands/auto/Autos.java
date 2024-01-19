@@ -37,7 +37,7 @@ public class Autos {
   }
 
   public static Command B1R3_2Cube() {
-    return new B1R3_2Cube(driveSubsystem);
+    return new B1R3_2Note(driveSubsystem);
   }
 
   public static boolean getFlip() {

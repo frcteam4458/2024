@@ -10,17 +10,14 @@ import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-import com.pathplanner.lib.util.GeometryUtil;
-
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import frc.robot.Constants.PositionConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
 /** Add your docs here. */
 public class SpeakerAlignCommand extends AlignCommand {
-
+    
     public SpeakerAlignCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, BooleanSupplier flip,
             double ap, double ai, double ad) {
         super(driveSubsystem, visionSubsystem, flip, ap, ai, ad);
@@ -32,8 +29,14 @@ public class SpeakerAlignCommand extends AlignCommand {
         var targetOptional = getTarget(7);
         if(targetOptional.isPresent()) {
             var target = targetOptional.get();
-            double yaw = Math.toRadians(target.getYaw());
-            return driveSubsystem.getPose().getRotation().plus(Rotation2d.fromRadians(yaw));
+            double yaw = target.getYaw();
+            Logger.recordOutput("Yaw Diff Raw", yaw);
+            yaw = Math.toRadians(yaw);
+            Logger.recordOutput("Yaw Diff Rad", yaw);
+            var rotation = Rotation2d.fromRadians(driveSubsystem.getPose().getRotation().getRadians() - (yaw));
+            Logger.recordOutput("Target Rotation", rotation);
+            Logger.recordOutput("Current Rotation", driveSubsystem.getPose().getRotation());
+            return rotation;
         }
         return new Rotation2d();
     }
@@ -50,4 +53,17 @@ public class SpeakerAlignCommand extends AlignCommand {
 
         return Optional.empty();
     }
+
+    @Override
+    public void execute() {
+        profiledYawController.setGoal(getAngle(driveSubsystem, flip).getRadians());
+        Logger.recordOutput("Yaw Diff", getAngle(driveSubsystem, flip));
+        super.execute();
+    }
+
+    // @Override
+    // public double getOmega() { 
+        
+    // }
+    
 }

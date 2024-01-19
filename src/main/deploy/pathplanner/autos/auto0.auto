@@ -1,20 +1,104 @@
 {
   "version": 1.0,
-  "startingPose": {
-    "position": {
-      "x": 2.0,
-      "y": 7.0
-    },
-    "rotation": 0
-  },
+  "startingPose": null,
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "Face Speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score Speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "path0"
+            "pathName": "Start to Note 1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Face Speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score Speaker"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Note 1 to Note 2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Note 2 to Scoring Position"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Face Speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score Speaker"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Scoring Position to Note 3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Note 3 to Scoring Position"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Face Speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score Speaker"
           }
         }
       ]

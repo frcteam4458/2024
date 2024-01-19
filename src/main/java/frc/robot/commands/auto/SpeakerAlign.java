@@ -13,8 +13,11 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import com.pathplanner.lib.util.GeometryUtil;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj2.command.ProfiledPIDCommand;
 import frc.robot.RobotContainer;
 import frc.robot.Constants.PositionConstants;
 import frc.robot.commands.TeleopCommand;
@@ -24,6 +27,7 @@ import frc.robot.subsystems.vision.VisionSubsystem;
 /** Add your docs here. */
 public class SpeakerAlign extends TeleopCommand {
     PIDController yawController;
+    public ProfiledPIDController profiledYawController;
     BooleanSupplier flip;
     DriveSubsystem driveSubsystem;
     VisionSubsystem visionSubsystem;
@@ -35,7 +39,9 @@ public class SpeakerAlign extends TeleopCommand {
         this.driveSubsystem = driveSubsystem;
         this.visionSubsystem = visionSubsystem;
         yawController = new PIDController(ap, ai, ad);
+        profiledYawController = new ProfiledPIDController(ap, ai, ad, new TrapezoidProfile.Constraints(1, 0.25));
         yawController.enableContinuousInput(-Math.PI, Math.PI);
+        profiledYawController.enableContinuousInput(-Math.PI, Math.PI);
         this.flip = flip;
     }
 
