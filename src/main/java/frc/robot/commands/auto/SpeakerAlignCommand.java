@@ -30,12 +30,8 @@ public class SpeakerAlignCommand extends AlignCommand {
         if(targetOptional.isPresent()) {
             var target = targetOptional.get();
             double yaw = target.getYaw();
-            Logger.recordOutput("Yaw Diff Raw", yaw);
             yaw = Math.toRadians(yaw);
-            Logger.recordOutput("Yaw Diff Rad", yaw);
             var rotation = Rotation2d.fromRadians(driveSubsystem.getPose().getRotation().getRadians() - (yaw));
-            Logger.recordOutput("Target Rotation", rotation);
-            Logger.recordOutput("Current Rotation", driveSubsystem.getPose().getRotation());
             return rotation;
         }
         return new Rotation2d();
@@ -57,13 +53,6 @@ public class SpeakerAlignCommand extends AlignCommand {
     @Override
     public void execute() {
         profiledYawController.setGoal(getAngle(driveSubsystem, flip).getRadians());
-        Logger.recordOutput("Yaw Diff", getAngle(driveSubsystem, flip));
         super.execute();
     }
-
-    // @Override
-    // public double getOmega() { 
-        
-    // }
-    
 }

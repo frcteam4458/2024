@@ -53,8 +53,6 @@ public class SpeakerAlign extends TeleopCommand {
             translation = GeometryUtil.flipFieldPosition(translation);
         }
 
-        Logger.recordOutput("X Diff", (driveSubsystem.getPose().getX() - translation.getX()));
-        Logger.recordOutput("Y Diff", (driveSubsystem.getPose().getY() - translation.getY()));
         var rotation = Rotation2d.fromRadians(
             Math.atan((driveSubsystem.getPose().getY() - translation.getY()) /
             (driveSubsystem.getPose().getX() - translation.getX()))
@@ -70,7 +68,6 @@ public class SpeakerAlign extends TeleopCommand {
     @Override
     public void execute() {
         yawController.setSetpoint(getAngle(driveSubsystem, flip).getRadians());
-        Logger.recordOutput("Yaw Diff", getAngle(driveSubsystem, flip));
         super.execute(); 
     }
 

@@ -24,12 +24,6 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "Start to Note 1"
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "Face Speaker"

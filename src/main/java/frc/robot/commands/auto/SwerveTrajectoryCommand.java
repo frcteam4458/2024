@@ -31,6 +31,7 @@ public class SwerveTrajectoryCommand extends SequentialCommandGroup {
   public SwerveTrajectoryCommand(DriveSubsystem driveSubsystem, String path, boolean auto) {
 
     if(auto) {
+      
       driveSubsystem.driveChassisSpeeds(new ChassisSpeeds(0, 0, 0));
       addCommands(AutoBuilder.buildAuto(path));
     } else {

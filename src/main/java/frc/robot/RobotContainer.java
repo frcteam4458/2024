@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.PositionConstants;
 import frc.robot.commands.TeleopCommand;
-import frc.robot.commands.auto.AprilTagAlign;
 import frc.robot.commands.auto.Autos;
 import frc.robot.commands.auto.PIDAlign;
 import frc.robot.commands.auto.SpeakerAlign;
