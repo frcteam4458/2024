@@ -12,6 +12,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
@@ -77,6 +78,10 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void arcadeDriveFieldOriented(double x, double y, double omega) {
+    if(RobotContainer.isRed() || RobotContainer.isInvalid()) {
+      x = -x;
+      y = -y;
+    }
     var speeds =
         ChassisSpeeds.fromFieldRelativeSpeeds(
             x * OperatorConstants.kMaxSpeed,

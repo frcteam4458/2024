@@ -41,45 +41,45 @@ public class VisionSubsystem extends SubsystemBase {
   public static double fpgaTimestamp = 0.0;
 
   public VisionSubsystem() {
-    camera = new PhotonCamera("camera");
-    SimCameraProperties properties = new SimCameraProperties();
-    // properties.setCalibration(640, 480, Rotation2d.fromDegrees(70));
-    cameraSim = new PhotonCameraSim(camera, properties);
-    if(Robot.isSimulation()) cameraSim.enableDrawWireframe(true);
+    // camera = new PhotonCamera("camera");
+    // SimCameraProperties properties = new SimCameraProperties();
+    // // properties.setCalibration(640, 480, Rotation2d.fromDegrees(70));
+    // cameraSim = new PhotonCameraSim(camera, properties);
+    // if(Robot.isSimulation()) cameraSim.enableDrawWireframe(true);
 
-    sim = new VisionSystemSim("main");
-    sim.addCamera(cameraSim, new Transform3d(0, 0, 0, new Rotation3d()));
-    try {
-      poseEstimator =
-          new PhotonPoseEstimator(
-              AprilTagFields.k2024Crescendo.loadAprilTagLayoutField(),
-              PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-              camera,
-              new Transform3d());
-      poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
+    // sim = new VisionSystemSim("main");
+    // sim.addCamera(cameraSim, new Transform3d(0, 0, 0, new Rotation3d()));
+    // try {
+    //   poseEstimator =
+    //       new PhotonPoseEstimator(
+    //           AprilTagFields.k2024Crescendo.loadAprilTagLayoutField(),
+    //           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+    //           camera,
+    //           new Transform3d());
+    //   poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
 
-      sim.addAprilTags(AprilTagFields.k2024Crescendo.loadAprilTagLayoutField());
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    //   sim.addAprilTags(AprilTagFields.k2024Crescendo.loadAprilTagLayoutField());
+    // } catch (Exception e) {
+    //   e.printStackTrace();
+    // }
   }
 
   @Override
   public void periodic() {
-    result = camera.getLatestResult();
+    // result = camera.getLatestResult();
 
-    if(result.hasTargets()) {
-      targets = result.getTargets();
-      bestTarget = result.getBestTarget();
-    }
+    // if(result.hasTargets()) {
+    //   targets = result.getTargets();
+    //   bestTarget = result.getBestTarget();
+    // }
     // poseEstimator.setReferencePose(DriveSubsystem.robotPose);
-    estimatedPose = poseEstimator.update();
+    // estimatedPose = poseEstimator.update();
     // fpgaTimestamp = Timer.getFPGATimestamp();
   }
 
   @Override
   public void simulationPeriodic() {
-    sim.update(DriveSubsystem.robotPose);
+    // sim.update(DriveSubsystem.robotPose);
   }
 
   public List<PhotonTrackedTarget> getTargets() {

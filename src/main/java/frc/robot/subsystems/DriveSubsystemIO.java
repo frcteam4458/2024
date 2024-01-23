@@ -33,21 +33,25 @@ public interface DriveSubsystemIO {
     public double flAngleVelocity = 0.0;
     public double flAngleVolts = 0.0;
     public double flAngleAmps = 0.0;
+    public double flAngleAbsolute = 0.0;
 
     public double frAnglePosition = 0.0;
     public double frAngleVelocity = 0.0;
     public double frAngleVolts = 0.0;
     public double frAngleAmps = 0.0;
+    public double frAngleAbsolute = 0.0;
 
     public double blAnglePosition = 0.0;
     public double blAngleVelocity = 0.0;
     public double blAngleVolts = 0.0;
     public double blAngleAmps = 0.0;
+    public double blAngleAbsolute = 0.0;
 
     public double brAnglePosition = 0.0;
     public double brAngleVelocity = 0.0;
     public double brAngleVolts = 0.0;
     public double brAngleAmps = 0.0;
+    public double brAngleAbsolute = 0.0;
 
     public double leftEncoderAverage = 0.0;
     public double rightEncoderAverage = 0.0;

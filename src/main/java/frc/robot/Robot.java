@@ -20,7 +20,7 @@ public class Robot extends LoggedRobot {
   public void robotInit() {
   
     if (Robot.isReal()) {
-      Logger.addDataReceiver(new WPILOGWriter("/media/sda2"));
+      // Logger.addDataReceiver(new WPILOGWriter("/media/sda2"));
       Logger.addDataReceiver(new NT4Publisher());
     } else {
       Logger.addDataReceiver(new NT4Publisher());

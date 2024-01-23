@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.PositionConstants;
@@ -46,6 +47,8 @@ public class RobotContainer {
     tempAutoChooser.setDefaultOption("Test Trajectory Auto", 1);
 
     configureBindings();
+
+    driveSubsystem.setPose(0, 0, 0);
   }
 
   private void configureBindings() {
@@ -91,7 +94,7 @@ public class RobotContainer {
     driverController.rightBumper().whileTrue(
       new SpeakerAlign(
         driveSubsystem, visionSubsystem, RobotContainer::isRed,
-        10.0, 0.0, 0.0
+        2.5, 0.0, 0.0
       )
     );
 
@@ -101,6 +104,16 @@ public class RobotContainer {
         10.0, 0.0, 0.0
       )
     );
+
+    // Reset Gyro
+    driverController.pov(0).onTrue(new InstantCommand(new Runnable() {
+
+      @Override
+      public void run() {
+        driveSubsystem.setPose(driveSubsystem.getPose().getX(), driveSubsystem.getPose().getY(), 0);
+      }
+      
+    }) );
 
   }
 
@@ -131,5 +144,9 @@ public class RobotContainer {
 
   public static boolean isBlue() {
     return getAlliance() == Alliance.Blue;
+  }
+
+  public static boolean isInvalid() {
+    return DriverStation.getAlliance().isEmpty();
   }
 }

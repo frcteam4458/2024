@@ -30,7 +30,7 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
   public DriveSubsystemIOSparkMax() {
     File swerveJsonDirectory = new File(Filesystem.getDeployDirectory(), "swerve");
     try {
-      swerveDrive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(3);
+      swerveDrive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(OperatorConstants.kMaxSpeed);
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -39,6 +39,7 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
     for (int i = 0; i < 4; i++)
       swerveDrive.getModules()[i].feedforward =
           new SimpleMotorFeedforward(OperatorConstants.kS, OperatorConstants.kV);
+    swerveDrive.setHeadingCorrection(true);
   }
 
   @Override
@@ -69,21 +70,25 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
     inputs.flAngleVelocity = swerveDrive.getModules()[0].getAngleMotor().getVelocity();
     inputs.flAngleVolts = getMotor(0, 1).get() * voltage;
     inputs.flAngleAmps = getMotor(0, 1).getOutputCurrent();
+    inputs.flAngleAbsolute = swerveDrive.getModules()[0].getAbsolutePosition();
 
     inputs.frAnglePosition = swerveDrive.getModules()[1].getAngleMotor().getPosition();
     inputs.frAngleVelocity = swerveDrive.getModules()[1].getAngleMotor().getVelocity();
     inputs.frAngleVolts = getMotor(1, 1).get() * voltage;
     inputs.frAngleAmps = getMotor(1, 1).getOutputCurrent();
+    inputs.frAngleAbsolute = swerveDrive.getModules()[1].getAbsolutePosition();
 
     inputs.blAnglePosition = swerveDrive.getModules()[2].getAngleMotor().getPosition();
     inputs.blAngleVelocity = swerveDrive.getModules()[2].getAngleMotor().getVelocity();
     inputs.blAngleVolts = getMotor(2, 1).get() * voltage;
     inputs.blAngleAmps = getMotor(2, 1).getOutputCurrent();
+    inputs.blAngleAbsolute = swerveDrive.getModules()[2].getAbsolutePosition();
 
     inputs.brAnglePosition = swerveDrive.getModules()[3].getAngleMotor().getPosition();
     inputs.brAngleVelocity = swerveDrive.getModules()[3].getAngleMotor().getVelocity();
     inputs.brAngleVolts = getMotor(3, 1).get() * voltage;
     inputs.brAngleAmps = getMotor(3, 1).getOutputCurrent();
+    inputs.brAngleAbsolute = swerveDrive.getModules()[3].getAbsolutePosition();
 
     inputs.leftEncoderAverage = (inputs.flPosition + inputs.blPosition) / 2;
     inputs.rightEncoderAverage = (inputs.frPosition + inputs.brPosition) / 2;
@@ -91,6 +96,13 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
     inputs.gyroYaw = swerveDrive.getYaw().getDegrees();
 
     inputs.robotPose = swerveDrive.getPose();
+
+    Logger.recordOutput("Modules", new double[]{
+      inputs.flAnglePosition, inputs.flVelocity,
+      inputs.frAnglePosition, inputs.frVelocity,
+      inputs.blAnglePosition, inputs.blVelocity,
+      inputs.brAnglePosition, inputs.brVelocity
+    });
   }
 
   @Override
