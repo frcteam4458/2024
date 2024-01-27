@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.Constants.OperatorConstants;
@@ -36,10 +37,11 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
     }
     System.out.println(swerveDrive.getSwerveController().config.maxAngularVelocity);
 
-    for (int i = 0; i < 4; i++)
-      swerveDrive.getModules()[i].feedforward =
-          new SimpleMotorFeedforward(OperatorConstants.kS, OperatorConstants.kV);
+    // for (int i = 0; i < 4; i++)
+    //   swerveDrive.getModules()[i].feedforward =
+    //       new SimpleMotorFeedforward(OperatorConstants.kS, OperatorConstants.kV);
     swerveDrive.setHeadingCorrection(true);
+
   }
 
   @Override

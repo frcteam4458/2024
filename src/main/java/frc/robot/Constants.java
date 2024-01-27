@@ -92,7 +92,10 @@ public final class Constants {
     public static final int kArmMotor = 9;
     public static final int kArmMotorFollower = 10;
     public static final double kArmPositionConversionFactor = (1.0/200.0) * 2 * Math.PI;
-    public static final double kArmMass = 8.0;
+    public static final double kArmMass = Units.lbsToKilograms(21.853);
+    public static final double kArmLength = Units.inchesToMeters(29.240);
     public static final double kArmRadPerSec = Math.toRadians(180);
+    public static final double kYOriginToArm = Units.inchesToMeters(8.144);
+    public static final double kZOriginToArm = Units.inchesToMeters(11.250);
   }
 }
