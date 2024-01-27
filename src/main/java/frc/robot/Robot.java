@@ -4,12 +4,14 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
-import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
+import com.revrobotics.REVPhysicsSim;
 
 public class Robot extends LoggedRobot {
   private Command autonomousCommand;
@@ -34,16 +36,9 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+
+    Logger.recordOutput("Battery Voltage", RobotController.getBatteryVoltage());
   }
-
-  @Override
-  public void disabledInit() {}
-
-  @Override
-  public void disabledPeriodic() {}
-
-  @Override
-  public void disabledExit() {}
 
   @Override
   public void autonomousInit() {
@@ -55,12 +50,6 @@ public class Robot extends LoggedRobot {
   }
 
   @Override
-  public void autonomousPeriodic() {}
-
-  @Override
-  public void autonomousExit() {}
-
-  @Override
   public void teleopInit() {
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
@@ -68,19 +57,12 @@ public class Robot extends LoggedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {}
-
-  @Override
-  public void teleopExit() {}
+  public void simulationPeriodic() {
+    REVPhysicsSim.getInstance().run();
+  }
 
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
   }
-
-  @Override
-  public void testPeriodic() {}
-
-  @Override
-  public void testExit() {}
 }

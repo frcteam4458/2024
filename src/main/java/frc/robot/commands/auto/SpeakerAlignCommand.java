@@ -7,10 +7,8 @@ package frc.robot.commands.auto;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
-import org.littletonrobotics.junction.Logger;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;

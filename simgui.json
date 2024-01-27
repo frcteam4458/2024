@@ -1,9 +1,11 @@
 {
   "NTProvider": {
     "types": {
+      "/AdvantageKit/RealOutputs/Arm/Mechanism": "Mechanism2d",
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/Field": "Field2d",
       "/SmartDashboard/PIDController[15]": "PIDController",
+      "/SmartDashboard/Pigeon IMU [0]": "Gyro",
       "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d",
       "/SmartDashboard/navX-Sensor[1]": "Gyro"
     }

@@ -4,21 +4,14 @@
 
 package frc.robot.commands.auto;
 
-import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
 import org.littletonrobotics.junction.Logger;
-import org.photonvision.targeting.PhotonTrackedTarget;
-
-import com.pathplanner.lib.util.GeometryUtil;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj2.command.ProfiledPIDCommand;
-import frc.robot.RobotContainer;
 import frc.robot.Constants.PositionConstants;
 import frc.robot.commands.TeleopCommand;
 import frc.robot.subsystems.DriveSubsystem;

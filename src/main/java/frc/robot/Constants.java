@@ -17,6 +17,7 @@ public final class Constants {
 
     // User controller settings
     public static final int kDriverControllerPort = 0;
+    public static final int kOperartorControllerPort = 1;
     public static final double kDeadzone = 0.05;
 
     public static final double kDriveRateLimit = 2.0;
@@ -69,5 +70,29 @@ public final class Constants {
     public static final Pose2d kSource3Pose = new Pose2d(0.6, 1.33, kSourceRotation);
 
     public static final Translation2d kSpeakerPosition = new Translation2d(0.5, 5.5);
+  }
+
+  public static class PIDControlConstants {
+    public static final double kP = 5.0;
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
+
+    public static final double kAP = 5.0;
+    public static final double kAI = 0.0;
+    public static final double kAD = 0.0;
+
+    public static final double kArmP = 50.0;
+    public static final double kArmI = 0.0;
+    public static final double kArmD = 0.0;
+
+    public static final boolean kArmPid = true;
+  }
+
+  public static class HardwareConstants {
+    public static final int kArmMotor = 9;
+    public static final int kArmMotorFollower = 10;
+    public static final double kArmPositionConversionFactor = (1.0/200.0) * 2 * Math.PI;
+    public static final double kArmMass = 8.0;
+    public static final double kArmRadPerSec = Math.toRadians(180);
   }
 }
