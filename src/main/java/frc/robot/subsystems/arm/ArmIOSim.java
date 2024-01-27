@@ -19,12 +19,12 @@ public class ArmIOSim extends ArmIOSparkMax {
         armSim = new SingleJointedArmSim(
             DCMotor.getNEO(2),
             200.0,
-            SingleJointedArmSim.estimateMOI(0.5, HardwareConstants.kArmMass),
-            0.5,
-            -3.14,
-            3.14,
+            SingleJointedArmSim.estimateMOI(HardwareConstants.kArmLength, HardwareConstants.kArmMass),
+            HardwareConstants.kArmLength,
+            -1,
+            4.0,
             true,
-            1.0
+            0.0
         );
     }
 
