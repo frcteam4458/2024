@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PIDCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -25,11 +24,9 @@ import frc.robot.commands.TeleopCommand;
 import frc.robot.commands.auto.Autos;
 import frc.robot.commands.auto.PIDAlign;
 import frc.robot.commands.auto.SpeakerAlign;
-import frc.robot.commands.auto.SpeakerAlignCommand;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.DriveSubsystemIOSparkMax;
 import frc.robot.subsystems.arm.Arm;
-import frc.robot.subsystems.arm.ArmIOInputsAutoLogged;
 import frc.robot.subsystems.arm.ArmIOSim;
 import frc.robot.subsystems.arm.ArmIOSparkMax;
 import frc.robot.subsystems.vision.VisionSubsystem;
@@ -53,7 +50,7 @@ public class RobotContainer {
     driveSubsystem = new DriveSubsystem(new DriveSubsystemIOSparkMax());
     if(Robot.isReal()) arm = new Arm(new ArmIOSparkMax());
     else arm = new Arm(new ArmIOSim());
-    visionSubsystem = new VisionSubsystem();
+    // visionSubsystem = new VisionSubsystem();
 
     Autos.constructAutoBuilder(driveSubsystem);
 

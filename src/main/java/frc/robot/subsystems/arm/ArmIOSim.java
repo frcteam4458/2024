@@ -1,9 +1,6 @@
 package frc.robot.subsystems.arm;
 
-import com.revrobotics.REVPhysicsSim;
-
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.Constants.HardwareConstants;
@@ -29,9 +26,6 @@ public class ArmIOSim extends ArmIOSparkMax {
             true,
             1.0
         );
-
-        // REVPhysicsSim.getInstance().addSparkMax(armMotor, DCMotor.getNEO(1));
-        // REVPhysicsSim.getInstance().addSparkMax(armMotorFollower, DCMotor.getNEO(1));
     }
 
     @Override
