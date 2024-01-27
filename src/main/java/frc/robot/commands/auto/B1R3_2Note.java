@@ -1,6 +1,6 @@
 package frc.robot.commands.auto;
 
-import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.drive.DriveSubsystem;
 
 /** Add your docs here. */
 public class B1R3_2Note extends SwerveTrajectoryCommand {

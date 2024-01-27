@@ -24,11 +24,11 @@ import frc.robot.commands.TeleopCommand;
 import frc.robot.commands.auto.Autos;
 import frc.robot.commands.auto.PIDAlign;
 import frc.robot.commands.auto.SpeakerAlign;
-import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.DriveSubsystemIOSparkMax;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIOSim;
 import frc.robot.subsystems.arm.ArmIOSparkMax;
+import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.subsystems.drive.DriveSubsystemIOSparkMax;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class RobotContainer {
