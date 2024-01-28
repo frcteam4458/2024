@@ -62,7 +62,8 @@ public final class Constants {
 
   public static class PositionConstants {
     
-    public static final Pose2d kAmpPose = new Pose2d(1.85, 7.6, Rotation2d.fromDegrees(90));
+    public static final Pose2d kAmpPose = new Pose2d(1.85, 7.7, Rotation2d.fromDegrees(270));
+    public static final double kAmpAngle = 1.640;
 
     public static final Rotation2d kSourceRotation = Rotation2d.fromRadians(-2.075);
     public static final Pose2d kSource1Pose = new Pose2d(1.75, 0.675, kSourceRotation);
@@ -95,7 +96,10 @@ public final class Constants {
     public static final double kArmMass = Units.lbsToKilograms(21.853);
     public static final double kArmLength = Units.inchesToMeters(29.240);
     public static final double kArmRadPerSec = Math.toRadians(180);
-    public static final double kYOriginToArm = Units.inchesToMeters(8.144);
-    public static final double kZOriginToArm = Units.inchesToMeters(11.250);
+    public static final double kYOriginToArm = 0.203;
+    public static final double kZOriginToArm = 0.279;
+
+    public static final double kArmRotPhysicalMin = -0.02;
+    public static final double kArmRotPhysicalMax = 3.429;
   }
 }

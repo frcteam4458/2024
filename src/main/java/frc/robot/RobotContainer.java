@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -71,44 +72,30 @@ public class RobotContainer {
     driveSubsystem.setDefaultCommand(teleopCommand);
 
     buttonTriggerPIDAlign(driverController.a(), PositionConstants.kAmpPose, RobotContainer::isRed,
-    PIDControlConstants.kP, PIDControlConstants.kI, PIDControlConstants.kD,
-    PIDControlConstants.kAP, PIDControlConstants.kAI, PIDControlConstants.kAD
+      PIDControlConstants.kP, PIDControlConstants.kI, PIDControlConstants.kD,
+      PIDControlConstants.kAP, PIDControlConstants.kAI, PIDControlConstants.kAD
     );
+
+    driverController.a().onTrue(Commands.run(new Runnable() {
+      @Override
+      public void run() {
+        arm.setSetpoint(PositionConstants.kAmpAngle);
+      }
+    }, arm));
     
-    // driverController.a().whileTrue(
-    //   new PIDAlign(
-    //     driveSubsystem,
-    //     PositionConstants.kAmpPose, RobotContainer::isRed,
-    //     10.0, 0, 0.0,
-    //     10.0, 0, 0.0
-    //   )
-    // );
-
-    driverController.x().whileTrue(
-      new PIDAlign(
-        driveSubsystem,
-        PositionConstants.kSource1Pose, RobotContainer::isBlue,
-        PIDControlConstants.kP, PIDControlConstants.kI, PIDControlConstants.kD,
-        PIDControlConstants.kAP, PIDControlConstants.kAI, PIDControlConstants.kAD
-      )
+    buttonTriggerPIDAlign(driverController.x(), PositionConstants.kSource1Pose, RobotContainer::isBlue,
+      PIDControlConstants.kP, PIDControlConstants.kI, PIDControlConstants.kD,
+      PIDControlConstants.kAP, PIDControlConstants.kAI, PIDControlConstants.kAD
     );
 
-    driverController.y().whileTrue(
-      new PIDAlign(
-        driveSubsystem,
-        PositionConstants.kSource2Pose, RobotContainer::isBlue,
-        PIDControlConstants.kP, PIDControlConstants.kI, PIDControlConstants.kD,
-        PIDControlConstants.kAP, PIDControlConstants.kAI, PIDControlConstants.kAD
-      )
+    buttonTriggerPIDAlign(driverController.y(), PositionConstants.kSource2Pose, RobotContainer::isBlue,
+      PIDControlConstants.kP, PIDControlConstants.kI, PIDControlConstants.kD,
+      PIDControlConstants.kAP, PIDControlConstants.kAI, PIDControlConstants.kAD
     );
 
-    driverController.b().whileTrue(
-      new PIDAlign(
-        driveSubsystem,
-        PositionConstants.kSource3Pose, RobotContainer::isBlue,
-        PIDControlConstants.kP, PIDControlConstants.kI, PIDControlConstants.kD,
-        PIDControlConstants.kAP, PIDControlConstants.kAI, PIDControlConstants.kAD
-      )
+    buttonTriggerPIDAlign(driverController.b(), PositionConstants.kSource3Pose, RobotContainer::isBlue,
+      PIDControlConstants.kP, PIDControlConstants.kI, PIDControlConstants.kD,
+      PIDControlConstants.kAP, PIDControlConstants.kAI, PIDControlConstants.kAD
     );
 
     driverController.rightBumper().whileTrue(
@@ -117,6 +104,27 @@ public class RobotContainer {
         PIDControlConstants.kAP, PIDControlConstants.kAI, PIDControlConstants.kAD
       )
     );
+    
+    driverController.rightBumper().whileTrue(Commands.run(new Runnable() {
+      @Override
+      public void run() {
+        Pose2d pose = driveSubsystem.getPose();
+        Translation2d speaker = PositionConstants.kSpeakerPosition;
+        arm.setScoringSetpoint(
+          Math.sqrt(
+            Math.pow(
+              pose.getX() - speaker.getX(), 2)) +
+            Math.pow(
+              pose.getY() - speaker.getY(), 2));
+      }
+    }, arm));
+
+    driverController.leftBumper().onTrue(Commands.run(new Runnable() {
+      @Override
+      public void run() {
+        arm.setSetpoint(0);
+      }
+    }, arm));
 
     // Reset Gyro
     driverController.pov(0).onTrue(new InstantCommand(new Runnable() {

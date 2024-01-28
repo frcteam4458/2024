@@ -55,7 +55,7 @@ public class SpeakerAlign extends TeleopCommand {
         if(flip.getAsBoolean()) {
             return rotation;
         } else {
-            return Rotation2d.fromRadians(Math.PI + rotation.getRadians());
+            return Rotation2d.fromRadians((rotation.getRadians()));
         }
     }
 

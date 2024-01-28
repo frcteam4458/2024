@@ -74,6 +74,12 @@ public class Arm extends SubsystemBase {
 
     public void setSetpoint(double angle) {
         setpoint = angle;
+        if(setpoint < HardwareConstants.kArmRotPhysicalMin) {
+            setpoint = HardwareConstants.kArmRotPhysicalMin;
+        }
+        if(HardwareConstants.kArmRotPhysicalMax < setpoint) {
+            setpoint = HardwareConstants.kArmRotPhysicalMax;
+        }
         controller.setSetpoint(setpoint);
     }
 
@@ -103,6 +109,10 @@ public class Arm extends SubsystemBase {
 
     public double getAngleRad() {
         return io.getAngle();
+    }
+
+    public void setScoringSetpoint(double distance) {
+        setSetpoint((-0.0386552 * distance * distance) + (0.350685 * distance) + 0.0935409);
     }
 
 }

@@ -32,20 +32,18 @@ public class TeleopCommand extends Command {
     addRequirements(driveSubsystem);
     filterX = new SlewRateLimiter(OperatorConstants.kDriveRateLimit);
     filterY = new SlewRateLimiter(OperatorConstants.kDriveRateLimit);
+
+    commandXboxController.pov(270).onTrue(new InstantCommand(new Runnable() {
+      @Override
+      public void run() {
+        fieldOrinted = !fieldOrinted;
+      }
+    }));
   }
 
   @Override
   public void initialize() {
     driveSubsystem.arcadeDrive(0, 0, 0);
-
-    commandXboxController.pov(270).onTrue(new InstantCommand(new Runnable() {
-
-      @Override
-      public void run() {
-        fieldOrinted = !fieldOrinted;
-      }
-      
-    }));
   }
 
   @Override
