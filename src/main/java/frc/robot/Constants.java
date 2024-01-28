@@ -40,6 +40,8 @@ public final class Constants {
 
     public static final double kSourceArmAngle = 0.84;
 
+    public static final double kArmFloorAngle = 0.0;
+
     public static final Translation2d kSpeakerPosition = new Translation2d(0.5, 5.5);
   }
 

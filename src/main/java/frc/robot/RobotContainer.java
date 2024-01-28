@@ -127,12 +127,7 @@ public class RobotContainer {
       }
     }, arm));
 
-    driverController.leftBumper().onTrue(Commands.run(new Runnable() {
-      @Override
-      public void run() {
-        arm.setSetpoint(0);
-      }
-    }, arm));
+    driverController.leftBumper().onTrue(NamedCommands.getCommand("ArmFloor"));
 
     // Reset Gyro
     driverController.pov(0).onTrue(new InstantCommand(new Runnable() {
