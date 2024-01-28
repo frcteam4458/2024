@@ -53,6 +53,8 @@ public final class Constants {
     public static final double kArmP = 50.0;
     public static final double kArmI = 0.0;
     public static final double kArmD = 0.0;
+    public static final double kArmRadPerSec = Math.toRadians(180);
+    public static final double kArmAccel = Math.toRadians(720);
 
     public static final boolean kArmPid = true;
 
@@ -72,8 +74,6 @@ public final class Constants {
     public static final double kArmPositionConversionFactor = (1.0/200.0) * 2 * Math.PI;
     public static final double kArmMass = Units.lbsToKilograms(21.853);
     public static final double kArmLength = Units.inchesToMeters(29.240);
-    public static final double kArmRadPerSec = Math.toRadians(180);
-
     public static final double kYOriginToArm = 0.203;
     public static final double kZOriginToArm = 0.279;
 

@@ -1,12 +1,12 @@
 package frc.robot.subsystems.arm;
 
-
 import org.littletonrobotics.junction.Logger;
 
-import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -21,9 +21,11 @@ import frc.robot.Constants.ControlConstants;
 
 public class Arm extends SubsystemBase {
 
-    PIDController controller;
+    ProfiledPIDController profiledPIDController;
+
     Mechanism2d mechanism;
     MechanismLigament2d armLigament;
+    MechanismLigament2d setpointLigament;
 
     ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
     ArmIO io;
@@ -33,16 +35,21 @@ public class Arm extends SubsystemBase {
     public Arm(ArmIO io) {
         this.io = io;
 
-        controller = new PIDController(
+        profiledPIDController = new ProfiledPIDController(
             ControlConstants.kArmP,
             ControlConstants.kArmI,
-            ControlConstants.kArmD);
+            ControlConstants.kArmD, 
+            new TrapezoidProfile.Constraints(
+                ControlConstants.kArmRadPerSec, ControlConstants.kArmAccel));
 
         mechanism = new Mechanism2d(0, 0);
         MechanismRoot2d root = mechanism.getRoot("shooter", -HardwareConstants.kYOriginToArm, HardwareConstants.kZOriginToArm);
         armLigament = root.append(new MechanismLigament2d("arm", HardwareConstants.kArmLength, 90));
         armLigament.setLineWeight(5);
         armLigament.setColor(new Color8Bit(128, 0, 128));
+        setpointLigament = root.append(new MechanismLigament2d("armSetpoint", HardwareConstants.kArmLength, 90));
+        setpointLigament.setLineWeight(2);
+        setpointLigament.setColor(new Color8Bit(0, 255, 0));
 
         new Trigger(DriverStation::isDisabled).whileTrue(new InstantCommand(new Runnable() {
             @Override
@@ -52,12 +59,15 @@ public class Arm extends SubsystemBase {
         }));
     }
 
+
+    // TODO during manual control, disable profiled control
     @Override
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Arm", inputs);
 
         armLigament.setAngle(io.getAngle() * (180.0 / Math.PI));
+        setpointLigament.setAngle(setpoint * (180.0 / Math.PI));
         Logger.recordOutput("Arm/Mechanism", mechanism);
         Logger.recordOutput("Arm/Setpoint", setpoint);
         Logger.recordOutput("Arm/Pose3d", new Pose3d(-HardwareConstants.kYOriginToArm, 0, HardwareConstants.kZOriginToArm, new Rotation3d((Math.PI / 2.0) - getAngleRad(), 0.0, (Math.PI / 2.0))));
@@ -65,7 +75,8 @@ public class Arm extends SubsystemBase {
         // TODO: log both setpoint and actual position
 
         if(ControlConstants.kArmPid) {
-            setVoltage(controller.calculate(io.getAngle()));
+            double output = profiledPIDController.calculate(io.getAngle());
+            setVoltage(output);
         }
     }
 
@@ -82,7 +93,7 @@ public class Arm extends SubsystemBase {
         if(HardwareConstants.kArmRotPhysicalMax < setpoint) {
             setpoint = HardwareConstants.kArmRotPhysicalMax;
         }
-        controller.setSetpoint(setpoint);
+        profiledPIDController.setGoal(setpoint);
     }
 
     public void setMotor(double value) {
@@ -94,7 +105,7 @@ public class Arm extends SubsystemBase {
     }
 
     public void adjustSetpoint(double adjustment) {
-        setSetpoint(setpoint += (adjustment * (HardwareConstants.kArmRadPerSec / 50)));
+        setSetpoint(setpoint += (adjustment * (ControlConstants.kArmRadPerSec / 50)));
     }
 
     public void setInput(double input) {
