@@ -2,6 +2,7 @@ package frc.robot.subsystems.arm;
 
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,6 +23,7 @@ import frc.robot.Constants.ControlConstants;
 public class Arm extends SubsystemBase {
 
     ProfiledPIDController profiledPIDController;
+    PIDController pidController;
 
     Mechanism2d mechanism;
     MechanismLigament2d armLigament;
@@ -32,8 +34,15 @@ public class Arm extends SubsystemBase {
 
     double setpoint = 0;
 
+    boolean manual = false;
+
     public Arm(ArmIO io) {
         this.io = io;
+
+        pidController = new PIDController(
+            ControlConstants.kArmP,
+            ControlConstants.kArmI,
+            ControlConstants.kArmD);
 
         profiledPIDController = new ProfiledPIDController(
             ControlConstants.kArmP,
@@ -59,8 +68,6 @@ public class Arm extends SubsystemBase {
         }));
     }
 
-
-    // TODO during manual control, disable profiled control
     @Override
     public void periodic() {
         io.updateInputs(inputs);
@@ -71,11 +78,15 @@ public class Arm extends SubsystemBase {
         Logger.recordOutput("Arm/Mechanism", mechanism);
         Logger.recordOutput("Arm/Setpoint", setpoint);
         Logger.recordOutput("Arm/Pose3d", new Pose3d(-HardwareConstants.kYOriginToArm, 0, HardwareConstants.kZOriginToArm, new Rotation3d((Math.PI / 2.0) - getAngleRad(), 0.0, (Math.PI / 2.0))));
+        Logger.recordOutput("Arm/SetpointPose3d", new Pose3d(-HardwareConstants.kYOriginToArm, 0, HardwareConstants.kZOriginToArm, new Rotation3d((Math.PI / 2.0) - setpoint, 0.0, (Math.PI / 2.0))));
 
-        // TODO: log both setpoint and actual position
 
+        // better way to do the switching might be ProfiledPIDController::setConstraints?
         if(ControlConstants.kArmPid) {
-            double output = profiledPIDController.calculate(io.getAngle());
+            double output = 0.0;
+            output = profiledPIDController.calculate(io.getAngle());
+            if(manual)
+                output = pidController.calculate(io.getAngle());
             setVoltage(output);
         }
     }
@@ -93,6 +104,7 @@ public class Arm extends SubsystemBase {
         if(HardwareConstants.kArmRotPhysicalMax < setpoint) {
             setpoint = HardwareConstants.kArmRotPhysicalMax;
         }
+        pidController.setSetpoint(setpoint);
         profiledPIDController.setGoal(setpoint);
     }
 
@@ -126,6 +138,10 @@ public class Arm extends SubsystemBase {
 
     public void setScoringSetpoint(double distance) {
         setSetpoint((-0.0386552 * distance * distance) + (0.350685 * distance) + 0.0935409);
+    }
+
+    public void setManualControl(boolean manualControl) {
+        manual = manualControl;
     }
 
 }

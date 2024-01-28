@@ -144,7 +144,12 @@ public class RobotContainer {
 
     new Trigger(() -> {
       return Math.abs(operatorJoystick.getRawAxis(0)) > 0.1;
-    }).whileTrue(Commands.run(new Runnable() {
+    }).onTrue(Commands.runOnce(new Runnable() {
+      @Override
+      public void run() {
+        arm.setManualControl(true);
+      }
+    }, arm)).whileTrue(Commands.run(new Runnable() {
       @Override
       public void run() {
         arm.setInput(operatorJoystick.getRawAxis(0));
@@ -153,6 +158,7 @@ public class RobotContainer {
       @Override
       public void run() {
         arm.setInput(0);
+        arm.setManualControl(false);
       }
     }));
 
