@@ -4,13 +4,20 @@
 
 package frc.robot.subsystems.drive;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Volts;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotContainer;
 import frc.robot.Constants.HardwareConstants;
 import frc.robot.Constants.OperatorConstants;
@@ -25,12 +32,30 @@ public class DriveSubsystem extends SubsystemBase {
 
   Field2d field;
 
+
+  public SysIdRoutine sysIdRoutine;
+
   public static Pose2d robotPose = new Pose2d();
 
   public DriveSubsystem(DriveSubsystemIO io) {
     this.io = io;
     field = new Field2d();
 
+    // Characterization object
+    sysIdRoutine = new SysIdRoutine(new SysIdRoutine.Config(),
+      new SysIdRoutine.Mechanism(
+        (Measure<Voltage> volts) -> {
+          setVolts(volts.in(Volts), volts.in(Volts));
+        },
+        log -> {
+          log.motor("drive-left").voltage(Volts.of((inputs.flVolts + inputs.blVolts) / 2.0))
+            .linearPosition(Meters.of(leftEncoderAverage()))
+            .linearVelocity(MetersPerSecond.of((inputs.flVelocity + inputs.blVelocity) / 2.0));
+
+          log.motor("drive-right").voltage(Volts.of((inputs.frVolts + inputs.brVolts) / 2.0))
+            .linearPosition(Meters.of(rightEncoderAverage()))
+            .linearVelocity(MetersPerSecond.of((inputs.frVelocity + inputs.brVelocity) / 2.0));
+        }, this));
   }
 
   @Override
@@ -53,8 +78,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   // Drive methods
   public void arcadeDrive(double x, double omega) {
-    // var speeds = DifferentialDrive.arcadeDriveIK(y, omega, true);
-    // tankDrive(speeds.left, speeds.right);
+ 
     var speeds =
         new ChassisSpeeds(
             x * HardwareConstants.kMaxSpeed, 0.0, omega * HardwareConstants.kMaxAngVel);
@@ -62,8 +86,6 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void arcadeDrive(double x, double y, double omega) {
-    // var speeds = DifferentialDrive.arcadeDriveIK(y, omega, true);
-    // tankDrive(speeds.left, speeds.right);
     var speeds =
         new ChassisSpeeds(
             x * HardwareConstants.kMaxSpeed,
@@ -122,8 +144,8 @@ public class DriveSubsystem extends SubsystemBase {
   public DifferentialDriveWheelSpeeds getWheelSpeeds() {
     var speeds =
         new DifferentialDriveWheelSpeeds(
-            (inputs.flVelocity + inputs.brVelocity) / 2,
-            (inputs.frVelocity + inputs.brVelocity) / 2);
+            (inputs.flVelocity + inputs.brVelocity) / 2.0,
+            (inputs.frVelocity + inputs.brVelocity) / 2.0);
 
     return speeds;
   }
@@ -148,15 +170,4 @@ public class DriveSubsystem extends SubsystemBase {
   public void setVolts(double left, double right) {
     io.setVolts(left, right);
   }
-
-  // public void tankDrive(double left, double right) {
-  //   tankDriveVolts(left * RobotController.getBatteryVoltage(), right *
-  // RobotController.getBatteryVoltage());
-  // }
-
-  // public void tankDriveVolts(double leftV, double rightV) {
-  //   io.setLeftVoltage(leftV);
-  //   io.setRightVoltage(rightV);
-  // }
-
 }

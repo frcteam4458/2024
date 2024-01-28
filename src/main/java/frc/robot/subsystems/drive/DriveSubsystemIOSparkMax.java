@@ -90,8 +90,8 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
     inputs.brAngleAmps = getMotor(3, 1).getOutputCurrent();
     inputs.brAngleAbsolute = swerveDrive.getModules()[3].getAbsolutePosition();
 
-    inputs.leftEncoderAverage = (inputs.flPosition + inputs.blPosition) / 2;
-    inputs.rightEncoderAverage = (inputs.frPosition + inputs.brPosition) / 2;
+    inputs.leftEncoderAverage = (inputs.flPosition + inputs.blPosition) / 2.0;
+    inputs.rightEncoderAverage = (inputs.frPosition + inputs.brPosition) / 2.0;
 
     inputs.gyroYaw = swerveDrive.getYaw().getDegrees();
 

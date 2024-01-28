@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.ControlConstants;
 import frc.robot.Constants.PositionConstants;
@@ -45,7 +46,7 @@ public class RobotContainer {
   private TeleopCommand teleopCommand;
 
   private SendableChooser<Integer> driveChooser = new SendableChooser<Integer>();
-  private SendableChooser<Integer> tempAutoChooser = new SendableChooser<Integer>();
+  private SendableChooser<Integer> autoChooser = new SendableChooser<Integer>();
 
   public RobotContainer() {
     driveSubsystem = new DriveSubsystem(new DriveSubsystemIOSparkMax());
@@ -59,8 +60,12 @@ public class RobotContainer {
 
     driveChooser.setDefaultOption("Arcade", 0);
 
-    tempAutoChooser.setDefaultOption("Nothing", 0);
-    tempAutoChooser.setDefaultOption("Test Trajectory Auto", 1);
+    autoChooser.setDefaultOption("Nothing", 0);
+    autoChooser.addOption("Amp Station Auto", 1);
+    autoChooser.addOption("Quasistatic Forward", 2);
+    autoChooser.addOption("Quasistatic Backward", 3);
+    autoChooser.addOption("Dynamic Forward", 4);
+    autoChooser.addOption("Dynamic Backward", 5);
 
     configureBindings();
 
@@ -151,7 +156,21 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return Autos.B1R3_2Cube();
+    if(autoChooser.getSelected() == 0) {
+      return Commands.none();
+    } else if(autoChooser.getSelected() == 1) {
+      return Autos.B1R3_2Cube();
+    } else if(autoChooser.getSelected() == 2) {
+      return driveSubsystem.sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward);
+    } else if(autoChooser.getSelected() == 3) {
+      return driveSubsystem.sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse);
+    } else if(autoChooser.getSelected() == 4) {
+      return driveSubsystem.sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward);
+    } else if(autoChooser.getSelected() == 5) {
+      return driveSubsystem.sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse);
+    }
+
+    return Commands.none();
   }
 
   public int getDriveConfig() {
