@@ -6,7 +6,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.Constants.OperatorConstants;
+import frc.robot.Constants.HardwareConstants;
 import frc.robot.subsystems.drive.DriveSubsystem;
 
 public class SwerveTrajectoryCommand extends SequentialCommandGroup {
@@ -64,7 +64,7 @@ public class SwerveTrajectoryCommand extends SequentialCommandGroup {
    */
   public SwerveTrajectoryCommand(DriveSubsystem driveSubsystem, Pose2d pose, double goalEndVel) {
     this(driveSubsystem, pose,
-      new PathConstraints(OperatorConstants.kMaxSpeed,
+      new PathConstraints(HardwareConstants.kMaxSpeed,
         1.0,
         6.28,
         6.28

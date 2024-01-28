@@ -8,11 +8,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
+import frc.robot.Constants.HardwareConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
@@ -24,14 +24,11 @@ public class DriveSubsystem extends SubsystemBase {
   DriveSubsystemIOInputsAutoLogged inputs = new DriveSubsystemIOInputsAutoLogged();
 
   Field2d field;
-  DifferentialDriveOdometry odometry;
 
   public static Pose2d robotPose = new Pose2d();
 
   public DriveSubsystem(DriveSubsystemIO io) {
     this.io = io;
-    odometry = new DifferentialDriveOdometry(new Rotation2d(0), 0, 0);
-
     field = new Field2d();
 
   }
@@ -43,11 +40,9 @@ public class DriveSubsystem extends SubsystemBase {
 
     Logger.recordOutput("Odometry/Pose", getPose());
 
-    odometry.update(Rotation2d.fromDegrees(getYaw()), leftEncoderAverage(),
-    rightEncoderAverage());
-
     robotPose = getPose();
 
+    // Perhaps its a good idea to enable pose estimation from a command rather than statically accessing the vision subsystem
     if(VisionSubsystem.estimatedPose.isPresent())
       addVisionMeasurement(VisionSubsystem.estimatedPose.get().estimatedPose, VisionSubsystem.estimatedPose.get().timestampSeconds);
   }
@@ -62,7 +57,7 @@ public class DriveSubsystem extends SubsystemBase {
     // tankDrive(speeds.left, speeds.right);
     var speeds =
         new ChassisSpeeds(
-            x * OperatorConstants.kMaxSpeed, 0.0, omega * OperatorConstants.kMaxAngVel);
+            x * HardwareConstants.kMaxSpeed, 0.0, omega * HardwareConstants.kMaxAngVel);
     driveChassisSpeeds(speeds);
   }
 
@@ -71,9 +66,9 @@ public class DriveSubsystem extends SubsystemBase {
     // tankDrive(speeds.left, speeds.right);
     var speeds =
         new ChassisSpeeds(
-            x * OperatorConstants.kMaxSpeed,
-            y * OperatorConstants.kMaxSpeed,
-            omega * OperatorConstants.kMaxAngVel);
+            x * HardwareConstants.kMaxSpeed,
+            y * HardwareConstants.kMaxSpeed,
+            omega * HardwareConstants.kMaxAngVel);
     driveChassisSpeeds(speeds);
   }
 
@@ -84,9 +79,9 @@ public class DriveSubsystem extends SubsystemBase {
     }
     var speeds =
         ChassisSpeeds.fromFieldRelativeSpeeds(
-            x * OperatorConstants.kMaxSpeed,
-            y * OperatorConstants.kMaxSpeed,
-            omega * OperatorConstants.kMaxAngVel,
+            x * HardwareConstants.kMaxSpeed,
+            y * HardwareConstants.kMaxSpeed,
+            omega * HardwareConstants.kMaxAngVel,
             new Rotation2d(Math.toRadians(getYaw())));
     driveChassisSpeeds(speeds);
   }
@@ -112,7 +107,6 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void setPose(Pose2d pose) {
-    // odometry.resetPosition(pose.getRotation(), pose.getX(), pose.getY(), pose);
     io.setPose(pose);
     Logger.recordOutput("setPose", pose);
   }
@@ -144,6 +138,15 @@ public class DriveSubsystem extends SubsystemBase {
 
   public double rightEncoderAverage() {
     return inputs.rightEncoderAverage;
+  }
+
+  /**
+   * Ideally should only be used for system identification
+   * @param left Left side voltage
+   * @param right Right side voltage
+   */
+  public void setVolts(double left, double right) {
+    io.setVolts(left, right);
   }
 
   // public void tankDrive(double left, double right) {

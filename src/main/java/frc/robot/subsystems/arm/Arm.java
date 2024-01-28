@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.HardwareConstants;
-import frc.robot.Constants.PIDControlConstants;
+import frc.robot.Constants.ControlConstants;
 
 public class Arm extends SubsystemBase {
 
@@ -34,9 +34,9 @@ public class Arm extends SubsystemBase {
         this.io = io;
 
         controller = new PIDController(
-            PIDControlConstants.kArmP,
-            PIDControlConstants.kArmI,
-            PIDControlConstants.kArmD);
+            ControlConstants.kArmP,
+            ControlConstants.kArmI,
+            ControlConstants.kArmD);
 
         mechanism = new Mechanism2d(0, 0);
         MechanismRoot2d root = mechanism.getRoot("shooter", -HardwareConstants.kYOriginToArm, HardwareConstants.kZOriginToArm);
@@ -62,7 +62,9 @@ public class Arm extends SubsystemBase {
         Logger.recordOutput("Arm/Setpoint", setpoint);
         Logger.recordOutput("Arm/Pose3d", new Pose3d(-HardwareConstants.kYOriginToArm, 0, HardwareConstants.kZOriginToArm, new Rotation3d((Math.PI / 2.0) - getAngleRad(), 0.0, (Math.PI / 2.0))));
 
-        if(PIDControlConstants.kArmPid) {
+        // TODO: log both setpoint and actual position
+
+        if(ControlConstants.kArmPid) {
             setVoltage(controller.calculate(io.getAngle()));
         }
     }
@@ -96,7 +98,7 @@ public class Arm extends SubsystemBase {
     }
 
     public void setInput(double input) {
-        if(PIDControlConstants.kArmPid) {
+        if(ControlConstants.kArmPid) {
             adjustSetpoint(input);
         } else {
             setMotor(input);

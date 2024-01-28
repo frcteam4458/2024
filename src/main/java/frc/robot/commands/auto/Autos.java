@@ -10,7 +10,7 @@ import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
-import frc.robot.Constants.OperatorConstants;
+import frc.robot.Constants.HardwareConstants;
 import frc.robot.subsystems.drive.DriveSubsystem;
 
 /** Add your docs here. */
@@ -27,10 +27,10 @@ public class Autos {
         driveSubsystem::getChassisSpeeds,
         driveSubsystem::driveChassisSpeeds,
         new HolonomicPathFollowerConfig(
-            new PIDConstants(OperatorConstants.kP, 0, 0),
-            new PIDConstants(OperatorConstants.kAngularP, 0, 0),
-            OperatorConstants.kMaxSpeed,
-            OperatorConstants.kDriveBaseRadius,
+            new PIDConstants(HardwareConstants.kP, 0, 0),
+            new PIDConstants(HardwareConstants.kAngularP, 0, 0),
+            HardwareConstants.kMaxSpeed,
+            HardwareConstants.kDriveBaseRadius,
             new ReplanningConfig()),
         RobotContainer::isRed,
         driveSubsystem);

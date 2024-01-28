@@ -19,7 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.Constants.PIDControlConstants;
+import frc.robot.Constants.ControlConstants;
 import frc.robot.Constants.PositionConstants;
 import frc.robot.commands.TeleopCommand;
 import frc.robot.commands.auto.Autos;
@@ -72,36 +72,36 @@ public class RobotContainer {
     driveSubsystem.setDefaultCommand(teleopCommand);
 
     buttonTriggerPIDAlign(driverController.a(), PositionConstants.kAmpPose, RobotContainer::isRed,
-      PIDControlConstants.kP, PIDControlConstants.kI, PIDControlConstants.kD,
-      PIDControlConstants.kAP, PIDControlConstants.kAI, PIDControlConstants.kAD
+      ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
+      ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
     );
 
     driverController.a().onTrue(Commands.run(new Runnable() {
       @Override
       public void run() {
-        arm.setSetpoint(PositionConstants.kAmpAngle);
+        arm.setSetpoint(PositionConstants.kAmpArmAngle);
       }
     }, arm));
     
     buttonTriggerPIDAlign(driverController.x(), PositionConstants.kSource1Pose, RobotContainer::isBlue,
-      PIDControlConstants.kP, PIDControlConstants.kI, PIDControlConstants.kD,
-      PIDControlConstants.kAP, PIDControlConstants.kAI, PIDControlConstants.kAD
+      ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
+      ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
     );
 
     buttonTriggerPIDAlign(driverController.y(), PositionConstants.kSource2Pose, RobotContainer::isBlue,
-      PIDControlConstants.kP, PIDControlConstants.kI, PIDControlConstants.kD,
-      PIDControlConstants.kAP, PIDControlConstants.kAI, PIDControlConstants.kAD
+      ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
+      ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
     );
 
     buttonTriggerPIDAlign(driverController.b(), PositionConstants.kSource3Pose, RobotContainer::isBlue,
-      PIDControlConstants.kP, PIDControlConstants.kI, PIDControlConstants.kD,
-      PIDControlConstants.kAP, PIDControlConstants.kAI, PIDControlConstants.kAD
+      ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
+      ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
     );
 
     driverController.rightBumper().whileTrue(
       new SpeakerAlign(
         driveSubsystem, visionSubsystem, RobotContainer::isRed,
-        PIDControlConstants.kAP, PIDControlConstants.kAI, PIDControlConstants.kAD
+        ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
       )
     );
     

@@ -1,15 +1,14 @@
 package frc.robot.subsystems.drive;
 
 import com.revrobotics.CANSparkMax;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotController;
-import frc.robot.Constants.OperatorConstants;
+import frc.robot.Constants.HardwareConstants;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -31,7 +30,7 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
   public DriveSubsystemIOSparkMax() {
     File swerveJsonDirectory = new File(Filesystem.getDeployDirectory(), "swerve");
     try {
-      swerveDrive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(OperatorConstants.kMaxSpeed);
+      swerveDrive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(HardwareConstants.kMaxSpeed);
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -41,7 +40,6 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
     //   swerveDrive.getModules()[i].feedforward =
     //       new SimpleMotorFeedforward(OperatorConstants.kS, OperatorConstants.kV);
     swerveDrive.setHeadingCorrection(true);
-
   }
 
   @Override
@@ -107,11 +105,17 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
     });
   }
 
+  /**
+   * @param speeds Desired robot-relative chassis speeds
+   */
   @Override
   public void setChassisSpeeds(ChassisSpeeds speeds) {
     swerveDrive.setChassisSpeeds(speeds);
   }
 
+  /**
+   * @return The current chassis speeds of the robot
+   */
   @Override
   public ChassisSpeeds getChassisSpeeds() {
     return swerveDrive.getFieldVelocity();
@@ -127,6 +131,10 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
             pose.getRotation().getRadians()));
   }
 
+  /**
+   * @param pose Estimated pose as reported by PhotonVision
+   * @param timestamp Timestamp of pose reported by PhotonVision
+   */
   @Override
   public void addVisionMeasurement(Pose3d pose, double timestamp) {
     var gyroOffset = swerveDrive.getGyroRotation3d();
@@ -145,4 +153,15 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
       return ((CANSparkMax) swerveDrive.getModules()[module].getDriveMotor().getMotor());
     else return ((CANSparkMax) swerveDrive.getModules()[module].getAngleMotor().getMotor());
   }
+
+  @Override
+  public void setVolts(double left, double right) {
+    getMotor(0, 0).setVoltage(left);
+    getMotor(2, 0).setVoltage(left);
+
+    getMotor(1, 0).setVoltage(right);
+    getMotor(3, 0).setVoltage(right);
+
+  }
+
 }

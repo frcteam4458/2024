@@ -72,4 +72,6 @@ public interface DriveSubsystemIO {
   public default void addVisionMeasurement(Pose3d pose, double timestamp) {}
 
   public default void setPose(Pose2d pose) {}
+
+  public default void setVolts(double left, double right) {}
 }
