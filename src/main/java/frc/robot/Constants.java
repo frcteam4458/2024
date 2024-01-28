@@ -38,6 +38,8 @@ public final class Constants {
     public static final Pose2d kSource2Pose = new Pose2d(1.2, 1.0, kSourceRotation);
     public static final Pose2d kSource3Pose = new Pose2d(0.6, 1.33, kSourceRotation);
 
+    public static final double kSourceArmAngle = Math.PI/2.0;
+
     public static final Translation2d kSpeakerPosition = new Translation2d(0.5, 5.5);
   }
 

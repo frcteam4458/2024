@@ -95,7 +95,7 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void arcadeDriveFieldOriented(double x, double y, double omega) {
-    if(RobotContainer.isRed() || RobotContainer.isInvalid()) {
+    if(RobotContainer.isRed()) {
       x = -x;
       y = -y;
     }

@@ -7,6 +7,8 @@ package frc.robot;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
+import com.pathplanner.lib.auto.NamedCommands;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -23,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.ControlConstants;
 import frc.robot.Constants.PositionConstants;
+import frc.robot.commands.ArmSetpoint;
 import frc.robot.commands.TeleopCommand;
 import frc.robot.commands.auto.Autos;
 import frc.robot.commands.auto.PIDAlign;
@@ -46,20 +49,20 @@ public class RobotContainer {
 
   private TeleopCommand teleopCommand;
 
-  private SendableChooser<Integer> driveChooser = new SendableChooser<Integer>();
   private SendableChooser<Integer> autoChooser = new SendableChooser<Integer>();
 
   public RobotContainer() {
     driveSubsystem = new DriveSubsystem(new DriveSubsystemIOSparkMax());
     if(Robot.isReal()) arm = new Arm(new ArmIOSparkMax());
     else arm = new Arm(new ArmIOSim());
+
+    ArmSetpoint.registerNamedSetpoints(arm);
+
     // visionSubsystem = new VisionSubsystem();
 
     Autos.constructAutoBuilder(driveSubsystem);
 
     teleopCommand = new TeleopCommand(driveSubsystem);
-
-    driveChooser.setDefaultOption("Arcade", 0);
 
     autoChooser.setDefaultOption("Nothing", 0);
     autoChooser.addOption("Amp Station Auto", 1);
@@ -68,7 +71,7 @@ public class RobotContainer {
     autoChooser.addOption("Dynamic Forward", 4);
     autoChooser.addOption("Dynamic Backward", 5);
 
-    SmartDashboard.putData(autoChooser);
+    SmartDashboard.putData("Auto Chooser", autoChooser);
 
     configureBindings();
 
@@ -76,7 +79,6 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    // SmartDashboard.putData("DriveChooser", driveChooser);
     driveSubsystem.setDefaultCommand(teleopCommand);
 
     buttonTriggerPIDAlign(driverController.a(), PositionConstants.kAmpPose, RobotContainer::isRed,
@@ -84,12 +86,7 @@ public class RobotContainer {
       ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
     );
 
-    driverController.a().onTrue(Commands.run(new Runnable() {
-      @Override
-      public void run() {
-        arm.setSetpoint(PositionConstants.kAmpArmAngle);
-      }
-    }, arm));
+    driverController.a().onTrue(NamedCommands.getCommand("ArmAmp"));
     
     buttonTriggerPIDAlign(driverController.x(), PositionConstants.kSource1Pose, RobotContainer::isBlue,
       ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
@@ -180,10 +177,6 @@ public class RobotContainer {
     }
 
     return Commands.none();
-  }
-
-  public int getDriveConfig() {
-    return (int) driveChooser.getSelected();
   }
 
   /**

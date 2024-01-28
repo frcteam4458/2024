@@ -8,8 +8,11 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.drive.DriveSubsystem;
@@ -22,8 +25,10 @@ public class TeleopCommand extends Command {
   SlewRateLimiter filterX;
   SlewRateLimiter filterY;
 
-  boolean fieldOrinted = true;
+  // boolean fieldOrinted = true;
   CommandXboxController commandXboxController;
+
+  private SendableChooser<Integer> driveChooser = new SendableChooser<Integer>();
 
   public TeleopCommand(DriveSubsystem driveSubsystem) {
     this.driveSubsystem = driveSubsystem;
@@ -33,12 +38,16 @@ public class TeleopCommand extends Command {
     filterX = new SlewRateLimiter(OperatorConstants.kDriveRateLimit);
     filterY = new SlewRateLimiter(OperatorConstants.kDriveRateLimit);
 
-    commandXboxController.pov(270).onTrue(new InstantCommand(new Runnable() {
-      @Override
-      public void run() {
-        fieldOrinted = !fieldOrinted;
-      }
-    }));
+    driveChooser.setDefaultOption("Robot Relative", 0);
+    driveChooser.addOption("Field Relative", 1);
+    SmartDashboard.putData(driveChooser);
+
+    // commandXboxController.pov(270).onTrue(new InstantCommand(new Runnable() {
+    //   @Override
+    //   public void run() {
+    //     fieldOrinted = !fieldOrinted;
+    //   }
+    // }));
   }
 
   @Override
@@ -47,14 +56,12 @@ public class TeleopCommand extends Command {
   }
 
   @Override
-  public void execute() {
-    // driveSubsystem.arcadeDrive(getX(), getY(), getOmega());
-    if(fieldOrinted)
+  public void execute() {    
+    new PrintCommand(driveChooser.getSelected() + "").schedule();
+    if(driveChooser.getSelected() == 1)
       driveSubsystem.arcadeDriveFieldOriented(getX(), getY(), getOmega());
     else
       driveSubsystem.arcadeDrive(getX(), getY(), getOmega());
-      
-    Logger.recordOutput("TeleopCommand/Field Orinted", fieldOrinted);
   }
 
   public double getX() {
