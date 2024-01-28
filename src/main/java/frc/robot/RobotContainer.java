@@ -92,16 +92,19 @@ public class RobotContainer {
       ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
       ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
     );
+    driverController.x().onTrue(NamedCommands.getCommand("ArmSource"));
 
     buttonTriggerPIDAlign(driverController.y(), PositionConstants.kSource2Pose, RobotContainer::isBlue,
       ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
       ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
     );
+    driverController.y().onTrue(NamedCommands.getCommand("ArmSource"));
 
     buttonTriggerPIDAlign(driverController.b(), PositionConstants.kSource3Pose, RobotContainer::isBlue,
       ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
       ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
     );
+    driverController.b().onTrue(NamedCommands.getCommand("ArmSource"));
 
     driverController.rightBumper().whileTrue(
       new SpeakerAlign(
