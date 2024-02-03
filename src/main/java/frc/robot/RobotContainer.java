@@ -112,6 +112,11 @@ public class RobotContainer {
         ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
       )
     );
+
+    NamedCommands.registerCommand("AlignSpeaker", new SpeakerAlign(
+        driveSubsystem, visionSubsystem, RobotContainer::isRed,
+        ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
+      ));
     
     driverController.rightBumper().whileTrue(Commands.run(new Runnable() {
       @Override

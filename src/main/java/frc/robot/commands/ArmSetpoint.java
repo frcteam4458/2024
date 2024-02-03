@@ -24,5 +24,6 @@ public class ArmSetpoint extends InstantCommand {
     NamedCommands.registerCommand("ArmAmp", new ArmSetpoint(arm, PositionConstants.kAmpArmAngle, "ArmAmp"));
     NamedCommands.registerCommand("ArmSource", new ArmSetpoint(arm, PositionConstants.kSourceArmAngle, "ArmSource"));
     NamedCommands.registerCommand("ArmFloor", new ArmSetpoint(arm, PositionConstants.kArmFloorAngle, "AmpFloor"));
+    NamedCommands.registerCommand("ArmSpeaker", new ArmSetpoint(arm, Math.PI * 1.5, "AmpFloor"));
   }
 }

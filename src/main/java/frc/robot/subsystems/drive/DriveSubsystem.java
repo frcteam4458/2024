@@ -42,7 +42,11 @@ public class DriveSubsystem extends SubsystemBase {
     field = new Field2d();
 
     // Characterization object
-    sysIdRoutine = new SysIdRoutine(new SysIdRoutine.Config(),
+    sysIdRoutine = new SysIdRoutine(
+      new SysIdRoutine.Config(
+        null, null, null,
+        (state) -> Logger.recordOutput("SysIdTestState", state.toString())
+      ),
       new SysIdRoutine.Mechanism(
         (Measure<Voltage> volts) -> {
           setVolts(volts.in(Volts), volts.in(Volts));

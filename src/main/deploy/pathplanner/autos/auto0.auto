@@ -1,6 +1,12 @@
 {
   "version": 1.0,
-  "startingPose": null,
+  "startingPose": {
+    "position": {
+      "x": 2.4582617826204314,
+      "y": 6.431784943341968
+    },
+    "rotation": 180.0
+  },
   "command": {
     "type": "sequential",
     "data": {
@@ -8,31 +14,31 @@
         {
           "type": "named",
           "data": {
-            "name": "Face Speaker"
+            "name": "AlignSpeaker"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Score Speaker"
+            "name": "ScoreSpeaker"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Intake"
+            "name": "IntakeFloor"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Face Speaker"
+            "name": "AlignSpeaker"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Score Speaker"
+            "name": "AlignSpeaker"
           }
         },
         {
@@ -56,13 +62,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Face Speaker"
+            "name": "AlignSpeaker"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Score Speaker"
+            "name": "ScoreSpeaker"
           }
         },
         {
@@ -86,13 +92,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Face Speaker"
+            "name": "AlignSpeaker"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Score Speaker"
+            "name": "ScoreSpeaker"
           }
         }
       ]
