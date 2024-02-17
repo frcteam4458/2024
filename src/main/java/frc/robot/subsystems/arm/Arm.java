@@ -83,22 +83,19 @@ public class Arm extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Arm", inputs);
 
-        armLigament.setAngle(io.getAngle() * (180.0 / Math.PI));
-        setpointLigament.setAngle(setpoint * (180.0 / Math.PI));
+        armLigament.setAngle(Math.toRadians(io.getAngle()) * (180.0 / Math.PI));
+        setpointLigament.setAngle(Math.toRadians(setpoint) * (180.0 / Math.PI));
         Logger.recordOutput("Arm/Mechanism", mechanism);
-        Logger.recordOutput("Arm/Setpoint", pidController.getSetpoint());
-        Logger.recordOutput("Arm/Pose3d", new Pose3d(-HardwareConstants.kYOriginToArm, 0, HardwareConstants.kZOriginToArm, new Rotation3d((Math.PI / 2.0) - getAngleRad(), 0.0, (Math.PI / 2.0))));
-        Logger.recordOutput("Arm/SetpointPose3d", new Pose3d(-HardwareConstants.kYOriginToArm, 0, HardwareConstants.kZOriginToArm, new Rotation3d((Math.PI / 2.0) - setpoint, 0.0, (Math.PI / 2.0))));
+        Logger.recordOutput("Arm/Setpoint", profiledPIDController.getSetpoint().position);
+        Logger.recordOutput("Arm/Pose3d", new Pose3d(-HardwareConstants.kYOriginToArm, 0, HardwareConstants.kZOriginToArm, new Rotation3d((Math.PI / 2.0) - Rotation2d.fromDegrees(io.getAngle()).getRadians(), 0.0, (Math.PI / 2.0))));
+        Logger.recordOutput("Arm/SetpointPose3d", new Pose3d(-HardwareConstants.kYOriginToArm, 0, HardwareConstants.kZOriginToArm, new Rotation3d((Math.PI / 2.0) - Math.toRadians(setpoint), 0.0, (Math.PI / 2.0))));
 
         if(ControlConstants.kArmPid) {
             double output = 0.0;
-            // output = -profiledPIDController.calculate(io.getAngle());
             output = -feedforward.calculate(
                     Units.degreesToRadians(profiledPIDController.getSetpoint().position), 0)
                 - profiledPIDController.calculate(io.getAngle());
 
-            // if(4 < output) output = 4;
-            // if(output < -4) output = -4;
 
             Logger.recordOutput("Arm/output", output);
             setVoltage(output);

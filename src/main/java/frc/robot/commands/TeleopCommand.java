@@ -40,7 +40,7 @@ public class TeleopCommand extends Command {
 
     driveChooser.setDefaultOption("Robot Relative", 0);
     driveChooser.addOption("Field Relative", 1);
-    SmartDashboard.putData("Drive Chooser", driveChooser);
+    // SmartDashboard.putData("Drive Chooser", driveChooser);
 
     // commandXboxController.pov(270).onTrue(new InstantCommand(new Runnable() {
     //   @Override
@@ -68,7 +68,7 @@ public class TeleopCommand extends Command {
     double filteredX = 0.0; // Forward/backward
     if (!Robot.isReal()) filteredX = filterX.calculate(-genericController.getRawAxis(1)); // Simulated axis
     else filteredX = filterX.calculate(-controller.getLeftY()); // Real axis
-    if (Math.abs(filteredX) < 0.1) filteredX = 0; // Deadzone
+    if (Math.abs(filteredX) < 0.01) filteredX = 0; // Deadzone
     return filteredX;
   }
 
@@ -76,7 +76,7 @@ public class TeleopCommand extends Command {
     double filteredY = 0.0;
     if (!Robot.isReal()) filteredY = filterY.calculate(-genericController.getRawAxis(0));
     else filteredY = filterY.calculate(-controller.getLeftX());
-    if (Math.abs(filteredY) < 0.1) filteredY = 0;
+    if (Math.abs(filteredY) < 0.01) filteredY = 0;
     return filteredY;
   }
 

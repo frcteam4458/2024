@@ -16,6 +16,7 @@ import org.littletonrobotics.junction.Logger;
 
 import swervelib.SwerveDrive;
 import swervelib.parser.SwerveParser;
+import swervelib.telemetry.SwerveDriveTelemetry;
 
 public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
   SwerveDrive swerveDrive;
@@ -41,6 +42,7 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
       // swerveDrive.getModules()[i].setAngleMotorConversionFactor(28.125);
     }
     swerveDrive.setHeadingCorrection(true);
+    SwerveDriveTelemetry.verbosity = SwerveDriveTelemetry.TelemetryVerbosity.NONE;
   }
 
   @Override

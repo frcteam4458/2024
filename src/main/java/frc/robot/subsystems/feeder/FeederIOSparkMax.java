@@ -5,11 +5,15 @@
 package frc.robot.subsystems.feeder;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.REVPhysicsSim;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Robot;
 import frc.robot.Constants.HardwareConstants;
 
 /** Add your docs here. */
@@ -34,6 +38,11 @@ public class FeederIOSparkMax implements FeederIO {
         feeder.setClosedLoopRampRate(0);
 
         feeder.setInverted(true);
+
+        if(Robot.isSimulation()) {
+            REVPhysicsSim.getInstance().addSparkMax(feeder, DCMotor.getNeo550(1));
+            SmartDashboard.putBoolean("Top Switch Sim", false);
+        }
     }
 
     @Override
@@ -45,6 +54,10 @@ public class FeederIOSparkMax implements FeederIO {
         inputs.position = encoder.getPosition();
         inputs.topSensor = !topSwitch.get();
         inputs.bottomSensor = !bottomSwitch.get();
+
+        if(Robot.isSimulation()) {
+            inputs.topSensor = SmartDashboard.getBoolean("Top Switch Sim", false);
+        }
     }
 
     @Override

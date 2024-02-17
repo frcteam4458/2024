@@ -8,9 +8,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Constants.ControlConstants;
@@ -72,6 +70,8 @@ public class Flywheel extends SubsystemBase {
             if(topOutput < -3) topOutput = -3;
             if(bottomOutput < -3) bottomOutput = -3;
 
+            Logger.recordOutput("Flywheel/TopOutput", topOutput + feedforward.calculate(rpm));
+            Logger.recordOutput("Flywheel/BottomOutput", bottomOutput + feedforward.calculate(rpm));
             if(!driver.getRawButton(4)) {
                 io.setTopVoltage(topOutput + feedforward.calculate(rpm));
                 io.setBottomVoltage(bottomOutput + feedforward.calculate(rpm));

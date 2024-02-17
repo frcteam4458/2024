@@ -9,17 +9,20 @@ import java.util.function.BooleanSupplier;
 
 import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -61,9 +64,9 @@ public class RobotContainer {
   private VisionSubsystem visionSubsystem;
 
   private TeleopCommand teleopCommand;
-  private SequentialCommandGroup shootCommand;
+  private Command shootCommand;
   private Intake intakeCommand;
-  private SequentialCommandGroup intakeCommandGroup;
+  private Command intakeCommandGroup;
 
   private SendableChooser<Integer> autoChooser = new SendableChooser<Integer>();
 
@@ -72,8 +75,7 @@ public class RobotContainer {
     if(Robot.isReal()) {
       arm = new Arm(new ArmIOSparkMax());
       flywheel = new Flywheel(new FlywheelIOSparkMax());
-    }
-    else {
+    } else {
       arm = new Arm(new ArmIOSim());
       flywheel = new Flywheel(new FlywheelIOSim());
     }
@@ -111,14 +113,15 @@ public class RobotContainer {
 
 
   private void configureBindings() {
+
+    SmartDashboard.putData("Nuclear Button", Commands.runOnce(() -> {
+      CommandScheduler.getInstance().cancelAll();
+    }));
+
     driveSubsystem.setDefaultCommand(teleopCommand);
 
     configureDriveSetpoints();
     configureArmJoystick();
-
-    // flywheel.setDefaultCommand(Commands.run(() -> {
-    //   flywheel.setRPM(SmartDashboard.getNumber("Flywheel RPM", 0));
-    // }, flywheel));
 
     // operatorJoystick.button(7).onTrue(new InstantCommand(() -> {
     //   driveSubsystem.setPose(new Pose2d());
@@ -132,41 +135,35 @@ public class RobotContainer {
     //   climb.set(false);
     // }, climb));
 
-    // new Trigger(DriverStation::isEnabled).onTrue(new InstantCommand(() -> {
-    //   flywheel.setRPM(1000);
-    // }, flywheel));
+    new Trigger(DriverStation::isEnabled).onTrue(new InstantCommand(() -> {
+      flywheel.setRPM(1000);
+    }, flywheel));
 
-    SmartDashboard.putBoolean("Toggle Flywheel/Feeder", false);
-
-      intakeCommandGroup = new SequentialCommandGroup(
-        new InstantCommand(() -> {
-          arm.setSetpoint(0);
-        }, arm),
-        new Intake(feeder),
-        new WaitCommand(0.25),
-        new InstantCommand(() -> {
-          feeder.setSetpoint(feeder.getPosition() + 0.75);
-        }, feeder)
-      );
+    intakeCommandGroup = Commands.sequence(
+      new InstantCommand(() -> {
+        arm.setSetpoint(0);
+      }, arm)).asProxy().andThen(Commands.sequence(
+      new Intake(feeder),
+      new WaitCommand(0.25),
+      new InstantCommand(() -> {
+        feeder.setSetpoint(feeder.getPosition() + 0.75);
+      }, feeder)
+    ));
 
     NamedCommands.registerCommand("Intake", intakeCommandGroup);
 
-    shootCommand = new SequentialCommandGroup(
+    shootCommand = Commands.sequence(
       new FlywheelCommand(flywheel, PositionConstants.kShootVelocity),
       new InstantCommand(() -> {
           feeder.set(ControlConstants.kFeederMagnitude);
         }, feeder
       ),
-      new WaitCommand(0.1),
+      new WaitCommand(0.2),
       new InstantCommand(() -> {
-          feeder.set(0);
-        }, feeder
-      ),
-      new ParallelCommandGroup(
-        new FlywheelCommand(flywheel, 1000),
-        intakeCommandGroup
-      )
-    );
+        feeder.set(0);
+        flywheel.setRPM(1000);
+      }, feeder, flywheel)).andThen(intakeCommandGroup);
+
 
     NamedCommands.registerCommand("Shoot", shootCommand);
 
@@ -289,25 +286,29 @@ public class RobotContainer {
 
   public void configureArmJoystick() {
     // Arm Control (probably make a command for this)
-    new Trigger(() -> {
-      return Math.abs(operatorJoystick.getRawAxis(0)) > 0.2;
-    }).onTrue(Commands.runOnce(new Runnable() {
-      @Override
-      public void run() {
-        arm.setManualControl(true);
-      }
-    }, arm)).whileTrue(Commands.run(new Runnable() {
-      @Override
-      public void run() {
-        arm.setInput(operatorJoystick.getRawAxis(0));
-      }
-    }, arm)).whileFalse(Commands.runOnce(new Runnable() {
-      @Override
-      public void run() {
-        arm.setInput(0);
-        arm.setManualControl(false);
-      }
-    }));
+    // new Trigger(() -> {
+    //   return Math.abs(operatorJoystick.getRawAxis(0)) > 0.2;
+    // }).onTrue(Commands.runOnce(new Runnable() {
+    //   @Override
+    //   public void run() {
+    //     arm.setManualControl(true);
+    //   }
+    // }, arm)).whileTrue(Commands.run(new Runnable() {
+    //   @Override
+    //   public void run() {
+    //     arm.setInput(operatorJoystick.getRawAxis(0));
+    //   }
+    // }, arm)).whileFalse(Commands.runOnce(new Runnable() {
+    //   @Override
+    //   public void run() {
+    //     arm.setInput(0);
+    //     arm.setManualControl(false);
+    //   }
+    // }));
+
+    arm.setDefaultCommand(Commands.run(() -> {
+      arm.setInput(MathUtil.applyDeadband(operatorJoystick.getRawAxis(0), 0.1));
+    }, arm));
   }
 
   public void registerNamedCommands() {
