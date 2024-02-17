@@ -140,8 +140,12 @@ public class Arm extends SubsystemBase {
         }
     }
 
-    public Rotation2d getAngle() {
-        return Rotation2d.fromRadians(io.getAngle());
+    public double getAngle() {
+        return io.getAngle();
+    }
+
+    public double getSetpoint() {
+        return setpoint;
     }
 
     public double getAngleRad() {

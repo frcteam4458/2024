@@ -32,47 +32,68 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 /** Add your docs here. */
 public class VisionSubsystem extends SubsystemBase {
 
-  PhotonCamera backCamera;
   PhotonCamera frontCamera;
-  PhotonCameraSim cameraSim;
-  PhotonPoseEstimator poseEstimator;
+  PhotonCamera backCamera;
+
+  PhotonCameraSim frontCameraSim;
+  PhotonCameraSim backCameraSim;
+
+  PhotonPoseEstimator frontPoseEstimator;
+  PhotonPoseEstimator backPoseEstimator;
+
   PhotonPipelineResult result;
   List<PhotonTrackedTarget> targets;
   PhotonTrackedTarget bestTarget;
 
   VisionSystemSim sim;
 
-  public static Optional<EstimatedRobotPose> estimatedPose = Optional.empty();
-  public static double fpgaTimestamp = 0.0;
+  public static Optional<EstimatedRobotPose> estimatedPoseFront = Optional.empty();
+  public static Optional<EstimatedRobotPose> estimatedPoseBack = Optional.empty();
 
-  Transform3d robotToCamera;
+  Transform3d robotToFrontCamera;
+  Transform3d robotToBackCamera;
 
   public VisionSubsystem() {
-    // -12.75 , 17.25
 
-    robotToCamera = new Transform3d(Units.inchesToMeters(-12.75),
-      0, Units.inchesToMeters(17.25), new Rotation3d(0, Units.degreesToRadians(30), Units.degreesToRadians(180)));
+    robotToFrontCamera = new Transform3d(Units.inchesToMeters(-9.5),
+      0, Units.inchesToMeters(17.25), new Rotation3d(0, Units.degreesToRadians(-15), Units.degreesToRadians(0)));
+
+    robotToBackCamera = new Transform3d(Units.inchesToMeters(-10.915),
+      0, Units.inchesToMeters(17.25), new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(180)));
+
+    frontCamera = new PhotonCamera("front");
     backCamera = new PhotonCamera("back");
-    
-    // SimCameraProperties properties = new SimCameraProperties();
-    // properties.setCalibration(800, 600, Rotation2d.fromDegrees(75));
-    // cameraSim = new PhotonCameraSim(backCamera, properties);
-    // if(Robot.isSimulation()) cameraSim.enableDrawWireframe(true);
 
-    // sim = new VisionSystemSim("main");
-    // sim.addCamera(
-    //   cameraSim,
-    //   robotToCamera);
+    SimCameraProperties properties = new SimCameraProperties();
+    properties.setCalibration(800, 600, Rotation2d.fromDegrees(70));
 
+    frontCameraSim = new PhotonCameraSim(frontCamera, properties);
+    backCameraSim = new PhotonCameraSim(backCamera, properties);
+    if(Robot.isSimulation()) {
+      frontCameraSim.enableDrawWireframe(true);
+      backCameraSim.enableDrawWireframe(true);
+
+      sim = new VisionSystemSim("main");
+
+      sim.addCamera(frontCameraSim, robotToFrontCamera);
+      sim.addCamera(backCameraSim, robotToBackCamera);
+    }
 
     try {
-      poseEstimator =
+      frontPoseEstimator = new PhotonPoseEstimator(
+              AprilTagFields.k2024Crescendo.loadAprilTagLayoutField(),
+              PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+              frontCamera,
+              robotToFrontCamera);
+      frontPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+
+      backPoseEstimator =
           new PhotonPoseEstimator(
               AprilTagFields.k2024Crescendo.loadAprilTagLayoutField(),
               PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
               backCamera,
-              robotToCamera);
-      poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
+              robotToBackCamera);
+      backPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
       sim.addAprilTags(AprilTagFields.k2024Crescendo.loadAprilTagLayoutField());
     } catch (Exception e) {
@@ -82,36 +103,42 @@ public class VisionSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    result = backCamera.getLatestResult();
+    // result = backCamera.getLatestResult();
 
-    if(result.hasTargets()) {
-      targets = result.getTargets();
-      bestTarget = result.getBestTarget();
+    // if(result.hasTargets()) {
+    //   targets = result.getTargets();
+    //   bestTarget = result.getBestTarget();
+    // }
+
+    estimatedPoseFront = frontPoseEstimator.update();
+    estimatedPoseBack = backPoseEstimator.update();
+
+    if(estimatedPoseFront.isPresent()) {
+      Logger.recordOutput("Vision/EstimatedPoseFront", estimatedPoseFront.get().estimatedPose.toPose2d());
     }
 
-    poseEstimator.setReferencePose(DriveSubsystem.robotPose);
-    estimatedPose = poseEstimator.update();
-
-    if(estimatedPose.isPresent()) {
-      Logger.recordOutput("Vision/EstimatedPose", estimatedPose.get().estimatedPose.toPose2d());
+    if(estimatedPoseBack.isPresent()) {
+      Logger.recordOutput("Vision/EstimatedPoseBack", estimatedPoseBack.get().estimatedPose.toPose2d());
     }
-    fpgaTimestamp = Timer.getFPGATimestamp();
+
   }
 
   @Override
   public void simulationPeriodic() {
-    // sim.update(DriveSubsystem.robotPose);
+    sim.update(DriveSubsystem.robotPose);
   }
 
   public List<PhotonTrackedTarget> getTargets() {
-    return targets;
+    List<PhotonTrackedTarget> list = frontCamera.getLatestResult().getTargets();
+    list.addAll(backCamera.getLatestResult().getTargets());
+    return list;
   }
 
   public PhotonTrackedTarget getBestTarget() {
-    return bestTarget;
+    return null;
   }
 
   public boolean hasTargets() {
-    return result.hasTargets();
+    return backCamera.getLatestResult().hasTargets() || frontCamera.getLatestResult().hasTargets();
   }
 }

@@ -36,6 +36,7 @@ import frc.robot.commands.Intake;
 import frc.robot.commands.TeleopCommand;
 import frc.robot.commands.auto.Autos;
 import frc.robot.commands.auto.PIDAlign;
+import frc.robot.commands.auto.SwerveTrajectoryCommand;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIOSim;
 import frc.robot.subsystems.arm.ArmIOSparkMax;
@@ -94,11 +95,13 @@ public class RobotContainer {
     teleopCommand = new TeleopCommand(driveSubsystem);
 
     autoChooser.setDefaultOption("Nothing", 0);
-    autoChooser.addOption("Amp Station Auto", 1);
-    autoChooser.addOption("Quasistatic Forward", 2);
-    autoChooser.addOption("Quasistatic Backward", 3);
-    autoChooser.addOption("Dynamic Forward", 4);
-    autoChooser.addOption("Dynamic Backward", 5);
+    autoChooser.addOption("OTF", 1);
+    autoChooser.addOption("2 Note Top", 2);
+
+    autoChooser.addOption("Quasistatic Forward", 102);
+    autoChooser.addOption("Quasistatic Backward", 103);
+    autoChooser.addOption("Dynamic Forward", 104);
+    autoChooser.addOption("Dynamic Backward", 105);
 
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
@@ -142,27 +145,44 @@ public class RobotContainer {
     intakeCommandGroup = Commands.sequence(
       new InstantCommand(() -> {
         arm.setSetpoint(0);
-      }, arm)).asProxy().andThen(Commands.sequence(
+      }, arm)).withInterruptBehavior(InterruptionBehavior.kCancelSelf).asProxy().andThen(Commands.sequence(
       new Intake(feeder),
       new WaitCommand(0.25),
       new InstantCommand(() -> {
         feeder.setSetpoint(feeder.getPosition() + 0.75);
       }, feeder)
-    ));
+    )).withInterruptBehavior(InterruptionBehavior.kCancelSelf);
 
     NamedCommands.registerCommand("Intake", intakeCommandGroup);
 
-    shootCommand = Commands.sequence(
-      new FlywheelCommand(flywheel, PositionConstants.kShootVelocity),
-      new InstantCommand(() -> {
-          feeder.set(ControlConstants.kFeederMagnitude);
-        }, feeder
-      ),
-      new WaitCommand(0.2),
-      new InstantCommand(() -> {
-        feeder.set(0);
-        flywheel.setRPM(1000);
-      }, feeder, flywheel)).andThen(intakeCommandGroup);
+    shootCommand =
+      Commands.parallel(
+        new FlywheelCommand(flywheel, PositionConstants.kShootVelocity), // Put flywheel up to speed
+
+        Commands.sequence(Commands.runOnce(() -> {
+          arm.setSetpoint(20); 
+          }, arm),
+          Commands.run(() -> {
+
+          }).until(() -> {
+            return (Math.abs(arm.getSetpoint() - arm.getAngle()) < 2.0);
+          })
+        )
+      )
+      .andThen(Commands.sequence(
+        new InstantCommand(() -> {
+            feeder.set(ControlConstants.kFeederMagnitude);
+          }, feeder
+        ),
+        new WaitCommand(0.2),
+        new InstantCommand(() -> {
+          feeder.set(0);
+          flywheel.setRPM(1000);
+        }, feeder, flywheel))
+    )
+    .asProxy().andThen(Commands.runOnce(() -> {
+      intakeCommandGroup.schedule();
+  }));
 
 
     NamedCommands.registerCommand("Shoot", shootCommand);
@@ -179,21 +199,32 @@ public class RobotContainer {
     if(autoChooser.getSelected() == 0) {
       return Commands.none();
     } else if(autoChooser.getSelected() == 1) {
-      return Autos.B1R3_2Cube();
+      return new SwerveTrajectoryCommand(driveSubsystem, "OTF", true);
+    } else if(autoChooser.getSelected() == 2) {
+      return new SwerveTrajectoryCommand(driveSubsystem, "2 Note Top", true);
     }
     
-    else if(autoChooser.getSelected() == 2) {
+
+
+
+
+
+    else if(autoChooser.getSelected() == 102) {
       return driveSubsystem.sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward);
-    } else if(autoChooser.getSelected() == 3) {
+    } else if(autoChooser.getSelected() == 103) {
       return driveSubsystem.sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse);
-    } else if(autoChooser.getSelected() == 4) {
+    } else if(autoChooser.getSelected() == 104) {
       return driveSubsystem.sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward);
-    } else if(autoChooser.getSelected() == 5) {
+    } else if(autoChooser.getSelected() == 105) {
       return driveSubsystem.sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse);
     }
 
     return Commands.none();
   }
+
+
+
+
 
   /**
    * Defaults to blue

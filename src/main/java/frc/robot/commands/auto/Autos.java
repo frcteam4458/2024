@@ -36,11 +36,7 @@ public class Autos {
         driveSubsystem);
   }
 
-  public static Command B1R3_2Cube() {
-    return new B1R3_2Note(driveSubsystem);
-  }
-
   public static boolean getFlip() {
-    return false;
+    return RobotContainer.isRed();
   }
 }
