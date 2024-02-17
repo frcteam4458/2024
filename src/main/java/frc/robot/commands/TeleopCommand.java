@@ -6,6 +6,7 @@ package frc.robot.commands;
 
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -19,6 +20,7 @@ public class TeleopCommand extends Command {
 
   DriveSubsystem driveSubsystem;
   XboxController controller;
+  GenericHID genericController;
   SlewRateLimiter filterX;
   SlewRateLimiter filterY;
 
@@ -31,13 +33,14 @@ public class TeleopCommand extends Command {
     this.driveSubsystem = driveSubsystem;
     controller = new XboxController(0);
     commandXboxController = new CommandXboxController(0);
+    genericController = new GenericHID(0);
     addRequirements(driveSubsystem);
     filterX = new SlewRateLimiter(OperatorConstants.kDriveRateLimit);
     filterY = new SlewRateLimiter(OperatorConstants.kDriveRateLimit);
 
     driveChooser.setDefaultOption("Robot Relative", 0);
     driveChooser.addOption("Field Relative", 1);
-    SmartDashboard.putData(driveChooser);
+    SmartDashboard.putData("Drive Chooser", driveChooser);
 
     // commandXboxController.pov(270).onTrue(new InstantCommand(new Runnable() {
     //   @Override
@@ -53,8 +56,9 @@ public class TeleopCommand extends Command {
   }
 
   @Override
-  public void execute() {    
-    if(driveChooser.getSelected() == 1)
+  public void execute() {  
+    // driveSubsystem.arcadeDrive(1, 0, 0);  
+    if(!genericController.getRawButton(1))
       driveSubsystem.arcadeDriveFieldOriented(getX(), getY(), getOmega());
     else
       driveSubsystem.arcadeDrive(getX(), getY(), getOmega());
@@ -62,7 +66,7 @@ public class TeleopCommand extends Command {
 
   public double getX() {
     double filteredX = 0.0; // Forward/backward
-    if (!Robot.isReal()) filteredX = filterX.calculate(-controller.getRawAxis(1)); // Simulated axis
+    if (!Robot.isReal()) filteredX = filterX.calculate(-genericController.getRawAxis(1)); // Simulated axis
     else filteredX = filterX.calculate(-controller.getLeftY()); // Real axis
     if (Math.abs(filteredX) < 0.1) filteredX = 0; // Deadzone
     return filteredX;
@@ -70,7 +74,7 @@ public class TeleopCommand extends Command {
 
   public double getY() {
     double filteredY = 0.0;
-    if (!Robot.isReal()) filteredY = filterY.calculate(-controller.getRawAxis(0));
+    if (!Robot.isReal()) filteredY = filterY.calculate(-genericController.getRawAxis(0));
     else filteredY = filterY.calculate(-controller.getLeftX());
     if (Math.abs(filteredY) < 0.1) filteredY = 0;
     return filteredY;
@@ -78,7 +82,7 @@ public class TeleopCommand extends Command {
 
   public double getOmega() {
     double omega = 0.0; // Turning
-    if (!Robot.isReal()) omega = -controller.getRawAxis(2);
+    if (!Robot.isReal()) omega = -genericController.getRawAxis(2);
     else omega = -controller.getRightX();
     if (Math.abs(omega) < 0.1) omega = 0;
     return omega;

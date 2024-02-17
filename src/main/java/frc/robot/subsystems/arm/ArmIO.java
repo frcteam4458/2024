@@ -7,6 +7,7 @@ public interface ArmIO {
   public static class ArmIOInputs {
     double voltage = 0.0;
     double angle = 0.0;
+    double absoluteAngle = 0.0;
   }
 
   public default void updateInputs(ArmIOInputs inputs) {}

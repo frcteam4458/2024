@@ -13,7 +13,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
-/** Add your docs here. */
+// Vision
 public class SpeakerAlignCommand extends AlignCommand {
     
     public SpeakerAlignCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, BooleanSupplier flip,

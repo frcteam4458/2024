@@ -49,7 +49,9 @@ public class AlignCommand extends TeleopCommand {
         Logger.recordOutput("X Diff", (driveSubsystem.getPose().getX() - translation.getX()));
         Logger.recordOutput("Y Diff", (driveSubsystem.getPose().getY() - translation.getY()));
         var rotation = Rotation2d.fromRadians(
-            Math.atan((driveSubsystem.getPose().getY() - translation.getY()) /
+            // Math.atan((driveSubsystem.getPose().getY() - translation.getY()) /
+            // (driveSubsystem.getPose().getX() - translation.getX()))
+            Math.atan2((driveSubsystem.getPose().getY() - translation.getY()),
             (driveSubsystem.getPose().getX() - translation.getX()))
         );
 

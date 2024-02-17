@@ -38,11 +38,14 @@ public final class Constants {
     public static final Pose2d kSource2Pose = new Pose2d(1.2, 1.0, kSourceRotation);
     public static final Pose2d kSource3Pose = new Pose2d(0.6, 1.33, kSourceRotation);
 
-    public static final double kSourceArmAngle = 0.84;
+    public static final double kSourceArmAngle = 20;
 
     public static final double kArmFloorAngle = 0.0;
 
     public static final Translation2d kSpeakerPosition = new Translation2d(0.5, 5.5);
+
+    public static final double kSpeakerAngle = 30.0;
+    public static final double kShootVelocity = 2500.0;
   }
 
   public static class ControlConstants {
@@ -54,13 +57,29 @@ public final class Constants {
     public static final double kAI = 0.0;
     public static final double kAD = 0.0;
 
-    public static final double kArmP = 50.0;
+    public static final double kArmP = 0.35;
     public static final double kArmI = 0.0;
     public static final double kArmD = 0.0;
-    public static final double kArmRadPerSec = Math.toRadians(180);
-    public static final double kArmAccel = Math.toRadians(720);
+    public static final double kArmDegPerSec = 100;
+    public static final double kArmAccel = 150;
 
     public static final boolean kArmPid = true;
+
+    public static final double kFlywheelP = 0.001;
+    public static final double kFlywheelI = 0.0;
+    public static final double kFlywheelD = 0.0;
+
+    public static final double kFlywheelS = 0.0;
+    public static final double kFlywheelV = 0.00215;
+    public static final double kFlywheelA = 0.0;
+
+    public static final double kFeederP = 7.5;
+    // public static final double kBottomStopRotations = 3;
+    // public static final double kTopStopRotations = 3;
+
+    public static final boolean kFlywheelPID = true;
+
+    public static final double kFeederMagnitude = 0.8;
 
     // Ramsete settings
     public static final double kB = 2.0;
@@ -72,17 +91,30 @@ public final class Constants {
   }
 
   public static class HardwareConstants {
-    public static final int kArmMotor = 9;
-    public static final int kArmMotorFollower = 10;
+    public static final int kArmMotor = 10;
+    public static final int kArmMotorFollower = 11;
+    public static final int kArmAbsoluteEncoder = 0;
+    public static final int kFlywheelTop = 20;
+    public static final int kFlywheelBottom = 21;
+    public static final int kFeeder = 22;
+
+    public static final int kClimber = 0;
+
+    public static final int kFeederTopSensor = 1;
+    public static final int kFeederBottomSensor = 2;
+    public static final boolean kInvertSensors = false;
+    public static final double kFeederVelocityConversionFactor = 1.0/4.0;
 
     public static final double kArmPositionConversionFactor = (1.0/200.0) * 2 * Math.PI;
     public static final double kArmMass = Units.lbsToKilograms(21.853);
     public static final double kArmLength = Units.inchesToMeters(29.240);
     public static final double kYOriginToArm = 0.203;
     public static final double kZOriginToArm = 0.279;
+    
+    public static final double kArmAbsoluteEncoderOffset = 0.555;
 
-    public static final double kArmRotPhysicalMin = -0.02;
-    public static final double kArmRotPhysicalMax = 3.429;
+    public static final double kArmRotPhysicalMin = 0;
+    public static final double kArmRotPhysicalMax = 97;
 
     // Drivetrain Limits
     public static final double kMaxSpeed = 3.81;

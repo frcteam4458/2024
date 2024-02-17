@@ -2,12 +2,15 @@ package frc.robot.subsystems.arm;
 
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -24,6 +27,8 @@ public class Arm extends SubsystemBase {
 
     ProfiledPIDController profiledPIDController;
     PIDController pidController;
+    Constraints profile;
+    ArmFeedforward feedforward;
 
     Mechanism2d mechanism;
     MechanismLigament2d armLigament;
@@ -44,12 +49,17 @@ public class Arm extends SubsystemBase {
             ControlConstants.kArmI,
             ControlConstants.kArmD);
 
+            profile = new TrapezoidProfile.Constraints(
+                ControlConstants.kArmDegPerSec, ControlConstants.kArmAccel);
+
         profiledPIDController = new ProfiledPIDController(
             ControlConstants.kArmP,
             ControlConstants.kArmI,
             ControlConstants.kArmD, 
             new TrapezoidProfile.Constraints(
-                ControlConstants.kArmRadPerSec, ControlConstants.kArmAccel));
+                ControlConstants.kArmDegPerSec, ControlConstants.kArmAccel));
+
+        feedforward = new ArmFeedforward(0.0, 0.4, 0.0);
 
         mechanism = new Mechanism2d(0, 0);
         MechanismRoot2d root = mechanism.getRoot("shooter", -HardwareConstants.kYOriginToArm, HardwareConstants.kZOriginToArm);
@@ -65,7 +75,7 @@ public class Arm extends SubsystemBase {
             public void run() {
                 setSetpoint(io.getAngle());
             }
-        }));
+        }).ignoringDisable(true));
     }
 
     @Override
@@ -76,17 +86,21 @@ public class Arm extends SubsystemBase {
         armLigament.setAngle(io.getAngle() * (180.0 / Math.PI));
         setpointLigament.setAngle(setpoint * (180.0 / Math.PI));
         Logger.recordOutput("Arm/Mechanism", mechanism);
-        Logger.recordOutput("Arm/Setpoint", setpoint);
+        Logger.recordOutput("Arm/Setpoint", pidController.getSetpoint());
         Logger.recordOutput("Arm/Pose3d", new Pose3d(-HardwareConstants.kYOriginToArm, 0, HardwareConstants.kZOriginToArm, new Rotation3d((Math.PI / 2.0) - getAngleRad(), 0.0, (Math.PI / 2.0))));
         Logger.recordOutput("Arm/SetpointPose3d", new Pose3d(-HardwareConstants.kYOriginToArm, 0, HardwareConstants.kZOriginToArm, new Rotation3d((Math.PI / 2.0) - setpoint, 0.0, (Math.PI / 2.0))));
 
-
-        // better way to do the switching might be ProfiledPIDController::setConstraints?
         if(ControlConstants.kArmPid) {
             double output = 0.0;
-            output = profiledPIDController.calculate(io.getAngle());
-            if(manual)
-                output = pidController.calculate(io.getAngle());
+            // output = -profiledPIDController.calculate(io.getAngle());
+            output = -feedforward.calculate(
+                    Units.degreesToRadians(profiledPIDController.getSetpoint().position), 0)
+                - profiledPIDController.calculate(io.getAngle());
+
+            // if(4 < output) output = 4;
+            // if(output < -4) output = -4;
+
+            Logger.recordOutput("Arm/output", output);
             setVoltage(output);
         }
     }
@@ -104,8 +118,9 @@ public class Arm extends SubsystemBase {
         if(HardwareConstants.kArmRotPhysicalMax < setpoint) {
             setpoint = HardwareConstants.kArmRotPhysicalMax;
         }
-        pidController.setSetpoint(setpoint);
         profiledPIDController.setGoal(setpoint);
+        // setpoint = 10;
+        // pidController.setSetpoint(10);
     }
 
     public void setMotor(double value) {
@@ -117,7 +132,7 @@ public class Arm extends SubsystemBase {
     }
 
     public void adjustSetpoint(double adjustment) {
-        setSetpoint(setpoint += (adjustment * (ControlConstants.kArmRadPerSec / 50)));
+        setSetpoint(setpoint += (adjustment * (ControlConstants.kArmDegPerSec / 50)));
     }
 
     public void setInput(double input) {
@@ -142,6 +157,12 @@ public class Arm extends SubsystemBase {
 
     public void setManualControl(boolean manualControl) {
         manual = manualControl;
+
+        if(manualControl) {
+            // profiledPIDController.setConstraints(new TrapezoidProfile.Constraints(1000, 1000));
+        } else {
+            // profiledPIDController.setConstraints(profile);
+        }
     }
 
 }
