@@ -7,11 +7,15 @@ package frc.robot;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -19,10 +23,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
+import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -32,11 +35,12 @@ import frc.robot.Constants.ControlConstants;
 import frc.robot.Constants.PositionConstants;
 import frc.robot.commands.ArmSetpoint;
 import frc.robot.commands.FlywheelCommand;
+import frc.robot.commands.HeadingCommand;
 import frc.robot.commands.Intake;
 import frc.robot.commands.TeleopCommand;
+import frc.robot.commands.auto.AlignCommand;
 import frc.robot.commands.auto.Autos;
 import frc.robot.commands.auto.PIDAlign;
-import frc.robot.commands.auto.SwerveTrajectoryCommand;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIOSim;
 import frc.robot.subsystems.arm.ArmIOSparkMax;
@@ -55,6 +59,8 @@ public class RobotContainer {
     = new CommandXboxController(OperatorConstants.kDriverControllerPort);
   private final CommandJoystick operatorJoystick
     = new CommandJoystick(OperatorConstants.kOperartorControllerPort);
+  private final GenericHID genericController = new GenericHID(0);
+  private final CommandGenericHID commandGeneric = new CommandGenericHID(0);
 
   private DriveSubsystem driveSubsystem;
   private Arm arm;
@@ -66,10 +72,11 @@ public class RobotContainer {
 
   private TeleopCommand teleopCommand;
   private Command shootCommand;
+  private Command shootIntakeCommand;
   private Intake intakeCommand;
   private Command intakeCommandGroup;
 
-  private SendableChooser<Integer> autoChooser = new SendableChooser<Integer>();
+  private SendableChooser<String> autoChooser = new SendableChooser<String>();
 
   public RobotContainer() {
     driveSubsystem = new DriveSubsystem(new DriveSubsystemIOSparkMax());
@@ -90,27 +97,32 @@ public class RobotContainer {
 
     visionSubsystem = new VisionSubsystem();
 
-    Autos.constructAutoBuilder(driveSubsystem);
 
     teleopCommand = new TeleopCommand(driveSubsystem);
 
-    autoChooser.setDefaultOption("Nothing", 0);
-    autoChooser.addOption("OTF", 1);
-    autoChooser.addOption("2 Note Top", 2);
+    String[] autos = new String[]{
+      "Nothing",
+      "OTF",
+      "2 Note Top",
 
-    autoChooser.addOption("Quasistatic Forward", 102);
-    autoChooser.addOption("Quasistatic Backward", 103);
-    autoChooser.addOption("Dynamic Forward", 104);
-    autoChooser.addOption("Dynamic Backward", 105);
+      "Quasistatic Forward",
+      "Quasistatic Backward",
+      "Dynamic Forward",
+      "Dynamic Backward",
+    };
 
-    SmartDashboard.putData("Auto Chooser", autoChooser);
+    for(String auto : autos) {
+      autoChooser.addOption(auto, auto);
+    }
+
+    SmartDashboard.putData("Autonomous Chooser", autoChooser);
 
     configureBindings();
+    Autos.constructAutoBuilder(driveSubsystem);
 
     driveSubsystem.setPose(0, 0, 0);
 
     SmartDashboard.putNumber("Flywheel RPM", 0);
-    SmartDashboard.putNumber("Feeder", 0);
   }
 
 
@@ -138,10 +150,6 @@ public class RobotContainer {
     //   climb.set(false);
     // }, climb));
 
-    new Trigger(DriverStation::isEnabled).onTrue(new InstantCommand(() -> {
-      flywheel.setRPM(1000);
-    }, flywheel));
-
     intakeCommandGroup = Commands.sequence(
       new InstantCommand(() -> {
         arm.setSetpoint(0);
@@ -151,12 +159,16 @@ public class RobotContainer {
       new InstantCommand(() -> {
         feeder.setSetpoint(feeder.getPosition() + 0.75);
       }, feeder)
-    )).withInterruptBehavior(InterruptionBehavior.kCancelSelf);
+    )).withInterruptBehavior(InterruptionBehavior.kCancelSelf).asProxy().andThen(new InstantCommand(() -> {
+      arm.setSetpoint(10);
+    }));
 
     NamedCommands.registerCommand("Intake", intakeCommandGroup);
+    NamedCommands.registerCommand("AutoIntake", Commands.runOnce(() -> {
+      intakeCommandGroup.asProxy().schedule();
+    }));
 
-    shootCommand =
-      Commands.parallel(
+    shootCommand = Commands.parallel(
         new FlywheelCommand(flywheel, PositionConstants.kShootVelocity), // Put flywheel up to speed
 
         Commands.sequence(Commands.runOnce(() -> {
@@ -179,47 +191,77 @@ public class RobotContainer {
           feeder.set(0);
           flywheel.setRPM(1000);
         }, feeder, flywheel))
-    )
-    .asProxy().andThen(Commands.runOnce(() -> {
-      intakeCommandGroup.schedule();
-  }));
+    );
 
+    shootIntakeCommand = shootCommand.asProxy().andThen(Commands.runOnce(() -> {
+      intakeCommandGroup.schedule();
+    }));
 
     NamedCommands.registerCommand("Shoot", shootCommand);
 
-    operatorJoystick.button(1).onTrue(NamedCommands.getCommand("Shoot"));
+
+    NamedCommands.registerCommand("AutoShoot", Commands.parallel(
+        new FlywheelCommand(flywheel, PositionConstants.kShootVelocity), // Put flywheel up to speed
+
+        Commands.sequence(Commands.runOnce(() -> {
+          arm.setSetpoint(20); 
+          }),
+          Commands.run(() -> {
+
+          }).until(() -> {
+            return (Math.abs(arm.getSetpoint() - arm.getAngle()) < 2.0);
+          })
+        ).andThen(Commands.sequence(
+        new InstantCommand(() -> {
+            feeder.set(ControlConstants.kFeederMagnitude);
+          }
+        ),
+        new WaitCommand(0.2),
+        new InstantCommand(() -> {
+          feeder.set(0);
+          flywheel.setRPM(1000);
+        }))
+    )
+    ));
+
+
+
+
+
+    NamedCommands.registerCommand("ShootIntake", shootIntakeCommand);
+
+    
+    operatorJoystick.button(1).onTrue(NamedCommands.getCommand("ShootIntake"));
+    commandGeneric.button(12).onTrue(NamedCommands.getCommand("ShootIntake"));
     operatorJoystick.button(2).onTrue(NamedCommands.getCommand("Intake"));
 
+    commandGeneric.button(13).onTrue(new HeadingCommand(driveSubsystem, 0));
+    commandGeneric.button(14).onTrue(new HeadingCommand(driveSubsystem, 90));
+    commandGeneric.button(15).onTrue(new HeadingCommand(driveSubsystem, 180));
+    commandGeneric.button(16).onTrue(new HeadingCommand(driveSubsystem, 270));
 
+    NamedCommands.registerCommand("SpeakerAlign", new AlignCommand(driveSubsystem, visionSubsystem, RobotContainer::isRed, ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD));
 
     registerNamedCommands();
   }
 
   public Command getAutonomousCommand() {
-    if(autoChooser.getSelected() == 0) {
-      return Commands.none();
-    } else if(autoChooser.getSelected() == 1) {
-      return new SwerveTrajectoryCommand(driveSubsystem, "OTF", true);
-    } else if(autoChooser.getSelected() == 2) {
-      return new SwerveTrajectoryCommand(driveSubsystem, "2 Note Top", true);
-    }
-    
 
-
-
-
-
-    else if(autoChooser.getSelected() == 102) {
+    driveSubsystem.driveChassisSpeeds(new ChassisSpeeds(0, 0, 0));
+    if(autoChooser.getSelected().equalsIgnoreCase("Quasistatic Forward")) {
       return driveSubsystem.sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward);
-    } else if(autoChooser.getSelected() == 103) {
+    } else if(autoChooser.getSelected().equalsIgnoreCase("Quasistatic Backward")) {
       return driveSubsystem.sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse);
-    } else if(autoChooser.getSelected() == 104) {
+    } else if(autoChooser.getSelected().equalsIgnoreCase("Dynamic Forward")) {
       return driveSubsystem.sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward);
-    } else if(autoChooser.getSelected() == 105) {
+    } else if(autoChooser.getSelected().equalsIgnoreCase("Dynamic Backward")) {
       return driveSubsystem.sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse);
+    } else if(autoChooser.getSelected().equalsIgnoreCase("Nothing")) {
+      return Commands.none();
+    } else {
+      return new PathPlannerAuto(autoChooser.getSelected());
+      // return AutoBuilder.buildAuto(autoChooser.getSelected()).andThen(Commands.runOnce(() -> { driveSubsystem.arcadeDrive(0, 0, 0); }));
     }
-
-    return Commands.none();
   }
 
 
@@ -258,10 +300,10 @@ public class RobotContainer {
   }
 
   public void configureDriveSetpoints() {
-    // buttonTriggerPIDAlign(driverController.a(), PositionConstants.kAmpPose, RobotContainer::isRed,
-    //   ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
-    //   ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
-    // );
+    buttonTriggerPIDAlign(driverController.a(), PositionConstants.kAmpPose, RobotContainer::isRed,
+      ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
+      ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
+    );
     // driverController.a().onTrue(NamedCommands.getCommand("ArmAmp"));
     
     // buttonTriggerPIDAlign(driverController.x(), PositionConstants.kSource1Pose, RobotContainer::isBlue,

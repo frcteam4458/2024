@@ -4,6 +4,8 @@
 
 package frc.robot.commands;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.flywheel.Flywheel;
 
@@ -21,10 +23,12 @@ public class FlywheelCommand extends Command {
     @Override
     public void initialize() {
         flywheel.setRPM(rpm);
+        Logger.recordOutput("Flywheel/Flywheel Command", true);
     }
 
     @Override
     public boolean isFinished() {
+        Logger.recordOutput("Flywheel/Flywheel Command", false);
         return flywheel.atSetpoint();
     }
 

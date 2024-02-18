@@ -7,6 +7,9 @@ package frc.robot.commands.auto;
 import java.util.function.BooleanSupplier;
 
 import org.littletonrobotics.junction.Logger;
+
+import com.pathplanner.lib.util.GeometryUtil;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -43,7 +46,7 @@ public class AlignCommand extends TeleopCommand {
         boolean flipPosition = flip.getAsBoolean();
 
         if(flipPosition) {
-            // translation = GeometryUtil.flipFieldPosition(translation);
+            translation = GeometryUtil.flipFieldPosition(translation);
         }
 
         Logger.recordOutput("X Diff", (driveSubsystem.getPose().getX() - translation.getX()));

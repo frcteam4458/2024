@@ -2,15 +2,34 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 2,
-      "y": 2
+      "x": 1.9080518161036326,
+      "y": 7.007220871584601
     },
-    "rotation": 0
+    "rotation": -138.07745539942437
   },
   "command": {
     "type": "sequential",
     "data": {
-      "commands": []
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "2 Note Top - 1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "2 Note Top - 2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "2 Note Top - 3"
+          }
+        }
+      ]
     }
   },
   "folder": null,

@@ -72,8 +72,8 @@ public class DriveSubsystem extends SubsystemBase {
     robotPose = getPose();
 
     // Perhaps its a good idea to enable pose estimation from a command rather than statically accessing the vision subsystem
-    if(VisionSubsystem.estimatedPoseBack.isPresent())
-      addVisionMeasurement(VisionSubsystem.estimatedPoseBack.get().estimatedPose, VisionSubsystem.estimatedPoseBack.get().timestampSeconds);
+    // if(VisionSubsystem.estimatedPoseBack.isPresent())
+      // addVisionMeasurement(VisionSubsystem.estimatedPoseBack.get().estimatedPose, VisionSubsystem.estimatedPoseBack.get().timestampSeconds);
   }
 
   public void addVisionMeasurement(Pose3d pose, double timestamp) {

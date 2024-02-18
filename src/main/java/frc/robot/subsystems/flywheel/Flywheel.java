@@ -107,10 +107,10 @@ public class Flywheel extends SubsystemBase {
     public boolean atSetpoint() {
         return (Math.abs(
             inputs.topVelocity - rpm)
-                < 50.0) &&
+                < 100.0) &&
             (Math.abs(
                 inputs.bottomVelocity - rpm)
-                < 50.0);
+                < 100.0);
         // return (topController.atSetpoint() && bottomController.atSetpoint());
     }
 }

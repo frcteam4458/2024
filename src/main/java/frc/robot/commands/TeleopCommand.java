@@ -27,7 +27,6 @@ public class TeleopCommand extends Command {
   // boolean fieldOrinted = true;
   CommandXboxController commandXboxController;
 
-  private SendableChooser<Integer> driveChooser = new SendableChooser<Integer>();
 
   public TeleopCommand(DriveSubsystem driveSubsystem) {
     this.driveSubsystem = driveSubsystem;
@@ -37,17 +36,6 @@ public class TeleopCommand extends Command {
     addRequirements(driveSubsystem);
     filterX = new SlewRateLimiter(OperatorConstants.kDriveRateLimit);
     filterY = new SlewRateLimiter(OperatorConstants.kDriveRateLimit);
-
-    driveChooser.setDefaultOption("Robot Relative", 0);
-    driveChooser.addOption("Field Relative", 1);
-    // SmartDashboard.putData("Drive Chooser", driveChooser);
-
-    // commandXboxController.pov(270).onTrue(new InstantCommand(new Runnable() {
-    //   @Override
-    //   public void run() {
-    //     fieldOrinted = !fieldOrinted;
-    //   }
-    // }));
   }
 
   @Override
@@ -58,7 +46,7 @@ public class TeleopCommand extends Command {
   @Override
   public void execute() {  
     // driveSubsystem.arcadeDrive(1, 0, 0);  
-    if(!genericController.getRawButton(1))
+    if(genericController.getRawButton(6) || genericController.getRawButton(8))
       driveSubsystem.arcadeDriveFieldOriented(getX(), getY(), getOmega());
     else
       driveSubsystem.arcadeDrive(getX(), getY(), getOmega());
@@ -83,7 +71,8 @@ public class TeleopCommand extends Command {
   public double getOmega() {
     double omega = 0.0; // Turning
     if (!Robot.isReal()) omega = -genericController.getRawAxis(2);
-    else omega = -controller.getRightX();
+    if (Robot.isReal()) omega = -genericController.getRawAxis(2);
+    // else omega = -controller.getRightX();
     if (Math.abs(omega) < 0.1) omega = 0;
     return omega;
   }

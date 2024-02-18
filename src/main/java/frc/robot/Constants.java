@@ -119,7 +119,7 @@ public final class Constants {
     // Drivetrain Limits
     public static final double kMaxSpeed = 3.81;
     public static final double kMaxAngVel = 12; // experimental value
-    public static final double kDriveBaseRadius = Units.inchesToMeters(Math.sqrt(Math.pow(11.75, 2.0) + Math.pow(10.75, 2.0))); // This is wrong
+    public static final double kDriveBaseRadius = Units.inchesToMeters(16.2822464359);
     public static final double kDriveGearing = 10.71; // this is just not true anymore, but for YAGSL gearing is stored in the deploy json
     public static final double kMOI = 7.5; // unmeasured, arbitrary value
     public static final double kMass = 60.0; // ^
@@ -132,8 +132,11 @@ public final class Constants {
     public static final double kS = 0.120;
     public static final double kV = 1.36;
     public static final double kA = 0.236;
-    public static final double kP = 0.146;
-    public static final double kAngularP = 0.146; // arbitrary
-    public static final double kTrackWidth = .7112;
+
+    public static final double kP = 0.45;
+
+    public static final double kAngularP = 0.3; // arbitrary
+
+    public static final double kTrackWidth = .95;
   }
 }

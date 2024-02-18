@@ -31,7 +31,7 @@ public class Autos {
             new PIDConstants(HardwareConstants.kAngularP, 0, 0),
             HardwareConstants.kMaxSpeed,
             HardwareConstants.kDriveBaseRadius,
-            new ReplanningConfig()),
+            new ReplanningConfig(true, true)),
         RobotContainer::isRed,
         driveSubsystem);
   }

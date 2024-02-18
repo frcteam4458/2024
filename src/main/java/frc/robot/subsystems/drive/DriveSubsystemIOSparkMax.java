@@ -41,8 +41,8 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
       // swerveDrive.getModules()[i].setDriveMotorConversionFactor(0.0392120164);
       // swerveDrive.getModules()[i].setAngleMotorConversionFactor(28.125);
     }
-    swerveDrive.setHeadingCorrection(true);
-    SwerveDriveTelemetry.verbosity = SwerveDriveTelemetry.TelemetryVerbosity.NONE;
+    // swerveDrive.setHeadingCorrection(true);
+    // SwerveDriveTelemetry.verbosity = SwerveDriveTelemetry.TelemetryVerbosity.NONE;
   }
 
   @Override
@@ -113,6 +113,7 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
    */
   @Override
   public void setChassisSpeeds(ChassisSpeeds speeds) {
+    // speeds.discretize(speeds, 0)
     swerveDrive.setChassisSpeeds(speeds);
   }
 
@@ -127,11 +128,11 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
   @Override
   public void setPose(Pose2d pose) {
     swerveDrive.resetOdometry(pose);
-    swerveDrive.setGyro(
-        new Rotation3d(
-            swerveDrive.getGyroRotation3d().getX(),
-            swerveDrive.getGyroRotation3d().getY(),
-            pose.getRotation().getRadians()));
+    // swerveDrive.setGyroOffset(
+    //     new Rotation3d(
+    //         swerveDrive.getGyroRotation3d().getX(),
+    //         swerveDrive.getGyroRotation3d().getY(),
+    //         pose.getRotation().getRadians()));
   }
 
   /**

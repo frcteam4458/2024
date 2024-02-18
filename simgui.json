@@ -4,6 +4,7 @@
       "/AdvantageKit/RealOutputs/Arm/Mechanism": "Mechanism2d",
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/Auto Chooser": "String Chooser",
+      "/SmartDashboard/Autonomous Chooser": "String Chooser",
       "/SmartDashboard/Drive Chooser": "String Chooser",
       "/SmartDashboard/Field": "Field2d",
       "/SmartDashboard/Nuclear Button": "Command",
