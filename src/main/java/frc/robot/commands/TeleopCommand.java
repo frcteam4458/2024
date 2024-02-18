@@ -8,8 +8,6 @@ package frc.robot.commands;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OperatorConstants;
@@ -70,10 +68,10 @@ public class TeleopCommand extends Command {
 
   public double getOmega() {
     double omega = 0.0; // Turning
-    if (!Robot.isReal()) omega = -genericController.getRawAxis(2);
-    if (Robot.isReal()) omega = -genericController.getRawAxis(2);
+    if (!Robot.isReal()) omega = -genericController.getRawAxis(4);
+    if (Robot.isReal()) omega = -genericController.getRawAxis(4);
     // else omega = -controller.getRightX();
-    if (Math.abs(omega) < 0.1) omega = 0;
+    if (Math.abs(omega) < 0.01) omega = 0;
     return omega;
   }
 
