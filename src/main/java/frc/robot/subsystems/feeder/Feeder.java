@@ -8,6 +8,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ControlConstants;
 
@@ -18,6 +19,9 @@ public class Feeder extends SubsystemBase {
     FeederIOInputsAutoLogged inputs = new FeederIOInputsAutoLogged();
     PIDController feederController;
     boolean pidControl = false;
+
+    boolean lock = false;
+    double magnitude = 0;
 
     GenericHID driver = new GenericHID(0);
 
@@ -49,14 +53,17 @@ public class Feeder extends SubsystemBase {
     }
 
     public void set(double value) {
-        if(!driver.getRawButton(4))
-            io.set(value);
+        // if(!driver.getRawButton(4))
+        io.setVoltage(value * RobotController.getBatteryVoltage());
         pidControl = false;
     }
 
     public void setVoltage(double volts) {
-        if(!driver.getRawButton(4))
-            io.setVoltage(volts);
+
+        if(lock) volts = magnitude * RobotController.getBatteryVoltage();
+
+        // if(!driver.getRawButton(4))
+        io.setVoltage(volts);
     }
     
     public void setSetpoint(double setpoint) {
@@ -78,6 +85,16 @@ public class Feeder extends SubsystemBase {
 
     public boolean atSetpoint() {
         return feederController.atSetpoint();
+    }
+
+    // Call set magnitude first
+    public void setLock(boolean lock) {
+        this.lock = lock;
+        set(magnitude);
+    }
+
+    public void setLockMagnitude(double magnitude) {
+        this.magnitude = magnitude;
     }
 
     

@@ -41,6 +41,8 @@ public class Arm extends SubsystemBase {
 
     boolean manual = false;
 
+    boolean stow = false;
+
     public Arm(ArmIO io) {
         this.io = io;
 
@@ -92,6 +94,11 @@ public class Arm extends SubsystemBase {
 
         if(ControlConstants.kArmPid) {
             double output = 0.0;
+            if(stow) {
+                profiledPIDController.setGoal(10);
+            } else {
+                profiledPIDController.setGoal(setpoint);
+            }
             output = -feedforward.calculate(
                     Units.degreesToRadians(profiledPIDController.getSetpoint().position), 0)
                 - profiledPIDController.calculate(io.getAngle());
@@ -115,9 +122,6 @@ public class Arm extends SubsystemBase {
         if(HardwareConstants.kArmRotPhysicalMax < setpoint) {
             setpoint = HardwareConstants.kArmRotPhysicalMax;
         }
-        profiledPIDController.setGoal(setpoint);
-        // setpoint = 10;
-        // pidController.setSetpoint(10);
     }
 
     public void setMotor(double value) {
@@ -164,6 +168,10 @@ public class Arm extends SubsystemBase {
         } else {
             // profiledPIDController.setConstraints(profile);
         }
+    }
+
+    public void setStow(boolean stow) {
+        this.stow = stow;
     }
 
 }

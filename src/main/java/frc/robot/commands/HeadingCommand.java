@@ -43,5 +43,10 @@ public class HeadingCommand extends TeleopCommand {
         if(1 < Math.abs(output)) output = 1;
         return output;
     }
+
+    @Override
+    public boolean isFinished() {
+        return (Math.abs(super.genericController.getRawAxis(4)) > 0.01);
+    }
     
 }

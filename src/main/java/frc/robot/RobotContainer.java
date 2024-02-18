@@ -7,6 +7,8 @@ package frc.robot;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -23,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
@@ -71,10 +74,19 @@ public class RobotContainer {
   private VisionSubsystem visionSubsystem;
 
   private TeleopCommand teleopCommand;
+
+  private Command aimCommand;
   private Command shootCommand;
-  private Command shootIntakeCommand;
+
+  private Command aimShootCommand;
+  private Command aimShootIntakeCommand;
   private Intake intakeCommand;
   private Command intakeCommandGroup;
+  private Command shootIntakeAimCommand;
+  private Command intakeAim;
+  private Command parallelShootAim;
+  private Command parallelShootAimIntake;
+  private Command shootIntakeCommand;
 
   private SendableChooser<String> autoChooser = new SendableChooser<String>();
 
@@ -101,7 +113,6 @@ public class RobotContainer {
     teleopCommand = new TeleopCommand(driveSubsystem);
 
     String[] autos = new String[]{
-      "Nothing",
       "OTF",
       "2 Note Top",
 
@@ -111,6 +122,7 @@ public class RobotContainer {
       "Dynamic Backward",
     };
 
+    autoChooser.setDefaultOption("Nothing", "Nothing");
     for(String auto : autos) {
       autoChooser.addOption(auto, auto);
     }
@@ -138,10 +150,6 @@ public class RobotContainer {
     configureDriveSetpoints();
     configureArmJoystick();
 
-    // operatorJoystick.button(7).onTrue(new InstantCommand(() -> {
-    //   driveSubsystem.setPose(new Pose2d());
-    // }));
-
     // operatorJoystick.button(11).onTrue(new InstantCommand(() -> {
     //   climb.set(true);
     // }, climb));
@@ -154,91 +162,98 @@ public class RobotContainer {
       new InstantCommand(() -> {
         arm.setSetpoint(0);
       }, arm)).withInterruptBehavior(InterruptionBehavior.kCancelSelf).asProxy().andThen(Commands.sequence(
-      new Intake(feeder),
+      new Intake(feeder).asProxy(),
       new WaitCommand(0.25),
       new InstantCommand(() -> {
         feeder.setSetpoint(feeder.getPosition() + 0.75);
-      }, feeder)
-    )).withInterruptBehavior(InterruptionBehavior.kCancelSelf).asProxy().andThen(new InstantCommand(() -> {
-      arm.setSetpoint(10);
-    }));
-
+      }, feeder).asProxy(),
+      Commands.runOnce(() -> {
+        arm.setSetpoint(10);
+      })
+    )).withInterruptBehavior(InterruptionBehavior.kCancelSelf).asProxy();
     NamedCommands.registerCommand("Intake", intakeCommandGroup);
-    NamedCommands.registerCommand("AutoIntake", Commands.runOnce(() -> {
-      intakeCommandGroup.asProxy().schedule();
-    }));
 
-    shootCommand = Commands.parallel(
-        new FlywheelCommand(flywheel, PositionConstants.kShootVelocity), // Put flywheel up to speed
 
-        Commands.sequence(Commands.runOnce(() -> {
-          arm.setSetpoint(20); 
-          }, arm),
-          Commands.run(() -> {
+    aimCommand = new ProxyCommand(Commands.parallel(
+        Commands.runOnce(() -> {
+          Logger.recordOutput("AimCommand/Running", true);
+        }),
+        new FlywheelCommand(flywheel, PositionConstants.kShootVelocity),
 
-          }).until(() -> {
-            return (Math.abs(arm.getSetpoint() - arm.getAngle()) < 2.0);
+        Commands.sequence(Commands.run(() -> {
+          arm.setSetpoint(20);
           })
         )
-      )
-      .andThen(Commands.sequence(
+    ).finallyDo(() -> {
+      Logger.recordOutput("AimCommand/Running", false);
+    }));
+
+    shootCommand = Commands.sequence(
+        Commands.runOnce(() -> {
+          Logger.recordOutput("ShootCommand/Running", true);
+        }),
+        Commands.waitSeconds(0.1),
+        Commands.waitUntil(() -> {
+          return (Math.abs(arm.getSetpoint() - arm.getAngle()) < 1.0) && flywheel.atSetpoint();
+        }).asProxy(),
         new InstantCommand(() -> {
             feeder.set(ControlConstants.kFeederMagnitude);
           }, feeder
-        ),
+        ).asProxy(),
         new WaitCommand(0.2),
-        new InstantCommand(() -> {
+        new ProxyCommand(new InstantCommand(() -> {
+          if(aimCommand.isScheduled()) aimCommand.cancel();
           feeder.set(0);
           flywheel.setRPM(1000);
-        }, feeder, flywheel))
-    );
+        }, flywheel, feeder))).finallyDo(() -> {
+          Logger.recordOutput("ShootCommand/Running", false);
+        });
 
-    shootIntakeCommand = shootCommand.asProxy().andThen(Commands.runOnce(() -> {
+    aimShootCommand = Commands.sequence(aimCommand.asProxy(), shootCommand.asProxy());
+
+    aimShootIntakeCommand = aimShootCommand.asProxy().andThen(Commands.runOnce(() -> {
       intakeCommandGroup.schedule();
     }));
 
+    shootIntakeAimCommand = Commands.sequence(shootCommand.asProxy(), intakeCommandGroup.asProxy(), Commands.runOnce(() -> { aimCommand.schedule(); }));
+
+    intakeAim = Commands.sequence(intakeCommandGroup.asProxy(), aimCommand.asProxy());
+ 
+    parallelShootAim = Commands.parallel(aimCommand.asProxy(), shootCommand.asProxy());
+    parallelShootAimIntake = Commands.sequence(parallelShootAim.asProxy(), intakeCommandGroup.asProxy());
+
+    shootIntakeCommand = Commands.sequence(shootCommand.asProxy(), intakeCommandGroup.asProxy());
+
+    NamedCommands.registerCommand("Aim", aimCommand);
     NamedCommands.registerCommand("Shoot", shootCommand);
-
-
-    NamedCommands.registerCommand("AutoShoot", Commands.parallel(
-        new FlywheelCommand(flywheel, PositionConstants.kShootVelocity), // Put flywheel up to speed
-
-        Commands.sequence(Commands.runOnce(() -> {
-          arm.setSetpoint(20); 
-          }),
-          Commands.run(() -> {
-
-          }).until(() -> {
-            return (Math.abs(arm.getSetpoint() - arm.getAngle()) < 2.0);
-          })
-        ).andThen(Commands.sequence(
-        new InstantCommand(() -> {
-            feeder.set(ControlConstants.kFeederMagnitude);
-          }
-        ),
-        new WaitCommand(0.2),
-        new InstantCommand(() -> {
-          feeder.set(0);
-          flywheel.setRPM(1000);
-        }))
-    )
-    ));
-
-
-
-
-
-    NamedCommands.registerCommand("ShootIntake", shootIntakeCommand);
-
+    NamedCommands.registerCommand("AimShoot", aimShootCommand);
+    NamedCommands.registerCommand("AimShootIntake", aimShootIntakeCommand);
+    NamedCommands.registerCommand("ShootIntakeAim", shootIntakeAimCommand);
+    NamedCommands.registerCommand("IntakeAim", intakeAim);
     
-    operatorJoystick.button(1).onTrue(NamedCommands.getCommand("ShootIntake"));
-    commandGeneric.button(12).onTrue(NamedCommands.getCommand("ShootIntake"));
-    operatorJoystick.button(2).onTrue(NamedCommands.getCommand("Intake"));
+    operatorJoystick.button(1).onTrue(parallelShootAimIntake);
+    commandGeneric.button(12).onTrue(parallelShootAimIntake);
+    operatorJoystick.button(2).onTrue(intakeCommandGroup);
 
-    commandGeneric.button(13).onTrue(new HeadingCommand(driveSubsystem, 0));
-    commandGeneric.button(14).onTrue(new HeadingCommand(driveSubsystem, 90));
-    commandGeneric.button(15).onTrue(new HeadingCommand(driveSubsystem, 180));
-    commandGeneric.button(16).onTrue(new HeadingCommand(driveSubsystem, 270));
+    commandGeneric.button(8).onTrue(Commands.runOnce(() -> { arm.setStow(true); }));
+    commandGeneric.button(8).onFalse(Commands.runOnce(() -> { arm.setStow(false); }));
+
+    commandGeneric.button(1).onTrue(Commands.runOnce(() -> {
+      feeder.setLockMagnitude(1);
+      feeder.setLock(true);
+    }));
+    commandGeneric.button(2).onTrue(Commands.runOnce(() -> {
+      feeder.setLock(false);
+    }));
+    commandGeneric.button(3).onTrue(Commands.runOnce(() -> {
+      feeder.setLockMagnitude(-1);
+      feeder.setLock(false);
+    }));
+
+    commandGeneric.button(11).onTrue(new HeadingCommand(driveSubsystem, 0));
+    commandGeneric.button(16).onTrue(new HeadingCommand(driveSubsystem, 90));
+    commandGeneric.button(13).onTrue(new HeadingCommand(driveSubsystem, 180));
+    commandGeneric.button(14).onTrue(new HeadingCommand(driveSubsystem, 270));
 
     NamedCommands.registerCommand("SpeakerAlign", new AlignCommand(driveSubsystem, visionSubsystem, RobotContainer::isRed, ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD));
 
@@ -246,7 +261,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-
+    System.out.println("Auto Selected: " + autoChooser.getSelected());
     driveSubsystem.driveChassisSpeeds(new ChassisSpeeds(0, 0, 0));
     if(autoChooser.getSelected().equalsIgnoreCase("Quasistatic Forward")) {
       return driveSubsystem.sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward);
@@ -258,7 +273,7 @@ public class RobotContainer {
       return driveSubsystem.sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse);
     } else if(autoChooser.getSelected().equalsIgnoreCase("Nothing")) {
       return Commands.none();
-    } else {
+    } else {  
       return new PathPlannerAuto(autoChooser.getSelected());
       // return AutoBuilder.buildAuto(autoChooser.getSelected()).andThen(Commands.runOnce(() -> { driveSubsystem.arcadeDrive(0, 0, 0); }));
     }
@@ -358,27 +373,6 @@ public class RobotContainer {
   }
 
   public void configureArmJoystick() {
-    // Arm Control (probably make a command for this)
-    // new Trigger(() -> {
-    //   return Math.abs(operatorJoystick.getRawAxis(0)) > 0.2;
-    // }).onTrue(Commands.runOnce(new Runnable() {
-    //   @Override
-    //   public void run() {
-    //     arm.setManualControl(true);
-    //   }
-    // }, arm)).whileTrue(Commands.run(new Runnable() {
-    //   @Override
-    //   public void run() {
-    //     arm.setInput(operatorJoystick.getRawAxis(0));
-    //   }
-    // }, arm)).whileFalse(Commands.runOnce(new Runnable() {
-    //   @Override
-    //   public void run() {
-    //     arm.setInput(0);
-    //     arm.setManualControl(false);
-    //   }
-    // }));
-
     arm.setDefaultCommand(Commands.run(() -> {
       arm.setInput(MathUtil.applyDeadband(operatorJoystick.getRawAxis(0), 0.1));
     }, arm));

@@ -112,7 +112,6 @@ public class VisionSubsystem extends SubsystemBase {
 
     estimatedPoseFront = frontPoseEstimator.update();
     estimatedPoseBack = backPoseEstimator.update();
-
     if(estimatedPoseFront.isPresent()) {
       Logger.recordOutput("Vision/EstimatedPoseFront", estimatedPoseFront.get().estimatedPose.toPose2d());
     }
@@ -125,7 +124,7 @@ public class VisionSubsystem extends SubsystemBase {
 
   @Override
   public void simulationPeriodic() {
-    sim.update(DriveSubsystem.robotPose);
+    // sim.update(DriveSubsystem.robotPose);
   }
 
   public List<PhotonTrackedTarget> getTargets() {

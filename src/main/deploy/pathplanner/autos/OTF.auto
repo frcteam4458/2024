@@ -12,21 +12,28 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "2 Note Top - 1"
+            "name": "Shoot"
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "2 Note Top - 2"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "2 Note Top - 3"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "OTF - 1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake"
+                }
+              }
+            ]
           }
         }
       ]
