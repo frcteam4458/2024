@@ -4,6 +4,9 @@
 
 package frc.robot.commands;
 
+import org.littletonrobotics.junction.Logger;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import frc.robot.RobotContainer;
 import frc.robot.Constants.ControlConstants;
@@ -19,34 +22,38 @@ public class HeadingCommand extends TeleopCommand {
         super(driveSubsystem);
         this.angle = angle;
 
-        pidController = new PIDController(ControlConstants.kAP, 0, 0);
-        pidController.enableContinuousInput(-180, 180);
+        pidController = new PIDController(ControlConstants.kAP, ControlConstants.kAI, 0);
+        pidController.enableContinuousInput(-Math.PI, Math.PI);
+        // pidController.setTolerance(Math.toRadians(5));
 
-        if(RobotContainer.isRed()) {
-            angle += 180;
-        }
     }
 
     @Override
     public void execute() {
         super.execute();
 
-        if(Math.abs(super.genericController.getRawAxis(4)) < 0.01) {
+        if(Math.abs(super.genericController.getRawAxis(4)) > 0.01) {
             this.cancel();
         }
+
+        if(RobotContainer.isRed()) pidController.setSetpoint(MathUtil.angleModulus(Math.toRadians(angle) + Math.PI));
+        pidController.setSetpoint(MathUtil.angleModulus(Math.toRadians(angle)));
     }
 
     @Override
     public double getOmega() {
-        double output = pidController.calculate(driveSubsystem.getPose().getRotation().getDegrees());
-        if(Math.abs(output) < -1) output = 1;
-        if(1 < Math.abs(output)) output = 1;
+        double output = pidController.calculate(driveSubsystem.getPose().getRotation().getRadians());
+        if(output < -0.25) output = -0.25;
+        if(0.25 < output) output = 0.25;
+        Logger.recordOutput("HeadingCommand/Setpoint", pidController.getSetpoint());
+        Logger.recordOutput("HeadingCommand/Position", driveSubsystem.getPose().getRotation().getRadians());
+        Logger.recordOutput("HeadingCommand/Output", output);
         return output;
     }
 
     @Override
     public boolean isFinished() {
-        return (Math.abs(super.genericController.getRawAxis(4)) > 0.01);
+        return (Math.abs(super.genericController.getRawAxis(4)) > 0.01) || pidController.atSetpoint();
     }
     
 }

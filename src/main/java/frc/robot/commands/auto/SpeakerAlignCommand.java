@@ -9,6 +9,7 @@ import java.util.function.BooleanSupplier;
 
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
@@ -32,7 +33,8 @@ public class SpeakerAlignCommand extends AlignCommand {
             var rotation = Rotation2d.fromRadians(driveSubsystem.getPose().getRotation().getRadians() - (yaw));
             return rotation;
         }
-        return new Rotation2d();
+        System.out.println("Target 7 not detected!");
+        return driveSubsystem.getPose().getRotation();
     }
 
     public Optional<PhotonTrackedTarget> getTarget(int targetid) {
@@ -50,7 +52,7 @@ public class SpeakerAlignCommand extends AlignCommand {
 
     @Override
     public void execute() {
-        profiledYawController.setGoal(getAngle(driveSubsystem, flip).getRadians());
         super.execute();
+        yawController.setSetpoint(MathUtil.angleModulus(getAngle(driveSubsystem, flip).getRadians()));
     }
 }

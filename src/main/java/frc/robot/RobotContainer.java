@@ -44,6 +44,7 @@ import frc.robot.commands.TeleopCommand;
 import frc.robot.commands.auto.AlignCommand;
 import frc.robot.commands.auto.Autos;
 import frc.robot.commands.auto.PIDAlign;
+import frc.robot.commands.auto.SpeakerAlignCommand;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIOSim;
 import frc.robot.subsystems.arm.ArmIOSparkMax;
@@ -254,8 +255,9 @@ public class RobotContainer {
     commandGeneric.button(16).onTrue(new HeadingCommand(driveSubsystem, 90));
     commandGeneric.button(13).onTrue(new HeadingCommand(driveSubsystem, 180));
     commandGeneric.button(14).onTrue(new HeadingCommand(driveSubsystem, 270));
-
     NamedCommands.registerCommand("SpeakerAlign", new AlignCommand(driveSubsystem, visionSubsystem, RobotContainer::isRed, ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD));
+    // commandGeneric.button(12).whileTrue(NamedCommands.getCommand("SpeakerAlign"));
+    commandGeneric.button(12).whileTrue(new SpeakerAlignCommand(driveSubsystem, visionSubsystem, RobotContainer::isRed, 5.0, 0, 0));
 
     registerNamedCommands();
   }

@@ -10,6 +10,7 @@ import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.util.GeometryUtil;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -61,20 +62,20 @@ public class AlignCommand extends TeleopCommand {
         if(flip.getAsBoolean()) {
             return rotation;
         } else {
-            return Rotation2d.fromRadians(Math.PI + rotation.getRadians());
+            return Rotation2d.fromRadians(rotation.getRadians());
         }
     }
 
     @Override   
     public void execute() {
-        yawController.setSetpoint(getAngle(driveSubsystem, flip).getRadians());
+        yawController.setSetpoint(MathUtil.angleModulus(getAngle(driveSubsystem, flip).getRadians()));
         Logger.recordOutput("Yaw Diff", getAngle(driveSubsystem, flip));
         super.execute();
     }
 
     @Override
     public double getOmega() {
-        double output = -yawController.calculate(driveSubsystem.getPose().getRotation().getRadians());;
+        double output = yawController.calculate(driveSubsystem.getPose().getRotation().getRadians());;
         if(output < -0.25) output = -0.25;
         if(0.25 < output) output = 0.25;
         Logger.recordOutput("Align Output", output);
