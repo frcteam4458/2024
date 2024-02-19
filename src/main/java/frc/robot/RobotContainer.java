@@ -18,6 +18,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -45,6 +46,8 @@ import frc.robot.commands.auto.AlignCommand;
 import frc.robot.commands.auto.Autos;
 import frc.robot.commands.auto.PIDAlign;
 import frc.robot.commands.auto.SpeakerAlignCommand;
+import frc.robot.subsystems.ShooterLED;
+import frc.robot.subsystems.VirtualSubsystem;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIOSim;
 import frc.robot.subsystems.arm.ArmIOSparkMax;
@@ -136,6 +139,7 @@ public class RobotContainer {
     driveSubsystem.setPose(0, 0, 0);
 
     SmartDashboard.putNumber("Flywheel RPM", 0);
+    ShooterLED.getInstance().intakeReady = true;
   }
 
 
@@ -151,13 +155,13 @@ public class RobotContainer {
     configureDriveSetpoints();
     configureArmJoystick();
 
-    // operatorJoystick.button(11).onTrue(new InstantCommand(() -> {
-    //   climb.set(true);
-    // }, climb));
+    operatorJoystick.button(XboxController.Button.kLeftBumper.value).onTrue(new InstantCommand(() -> {
+      climb.set(false);
+    }, climb));
 
-    // operatorJoystick.button(10).onTrue(new InstantCommand(() -> {
-    //   climb.set(false);
-    // }, climb));
+    operatorJoystick.button(XboxController.Button.kRightBumper.value).onTrue(new InstantCommand(() -> {
+      climb.set(true);
+    }, climb));
 
     intakeCommandGroup = Commands.sequence(
       new InstantCommand(() -> {
@@ -182,7 +186,7 @@ public class RobotContainer {
         new FlywheelCommand(flywheel, PositionConstants.kShootVelocity),
 
         Commands.sequence(Commands.run(() -> {
-          arm.setSetpoint(20);
+          // arm.setSetpoint(20);
           })
         )
     ).finallyDo(() -> {
@@ -192,6 +196,7 @@ public class RobotContainer {
     shootCommand = Commands.sequence(
         Commands.runOnce(() -> {
           Logger.recordOutput("ShootCommand/Running", true);
+          if(!aimCommand.isScheduled()) aimCommand.schedule();
         }),
         Commands.waitSeconds(0.1),
         Commands.waitUntil(() -> {
@@ -256,8 +261,12 @@ public class RobotContainer {
     commandGeneric.button(13).onTrue(new HeadingCommand(driveSubsystem, 180));
     commandGeneric.button(14).onTrue(new HeadingCommand(driveSubsystem, 270));
     NamedCommands.registerCommand("SpeakerAlign", new AlignCommand(driveSubsystem, visionSubsystem, RobotContainer::isRed, ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD));
+    
+    operatorJoystick.button(XboxController.Button.kX.value).whileTrue
+    (Commands.parallel(aimCommand.asProxy(), NamedCommands.getCommand("SpeakerAlign").asProxy()));
+
     // commandGeneric.button(12).whileTrue(NamedCommands.getCommand("SpeakerAlign"));
-    commandGeneric.button(12).whileTrue(new SpeakerAlignCommand(driveSubsystem, visionSubsystem, RobotContainer::isRed, 5.0, 0, 0));
+    // commandGeneric.button(12).whileTrue(new SpeakerAlignCommand(driveSubsystem, visionSubsystem, RobotContainer::isRed, 5.0, 0, 0));
 
     registerNamedCommands();
   }

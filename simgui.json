@@ -1,4 +1,14 @@
 {
+  "HALProvider": {
+    "Addressable LEDs": {
+      "0": {
+        "columns": 1
+      },
+      "window": {
+        "visible": true
+      }
+    }
+  },
   "NTProvider": {
     "types": {
       "/AdvantageKit/RealOutputs/Arm/Mechanism": "Mechanism2d",
