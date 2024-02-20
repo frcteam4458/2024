@@ -45,6 +45,7 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
     }
     // swerveDrive.setHeadingCorrection(true);
     // SwerveDriveTelemetry.verbosity = SwerveDriveTelemetry.TelemetryVerbosity.NONE;
+    // swerveDrive.driveFieldOriented();
   }
 
   @Override
@@ -115,12 +116,27 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
    */
   @Override
   public void setChassisSpeeds(ChassisSpeeds speeds) {
-    // speeds.discretize(speeds, 0)
+    swerveDrive.chassisVelocityCorrection = false;
+    swerveDrive.setHeadingCorrection(false);
     swerveDrive.setChassisSpeeds(speeds);
   }
 
+  @Override
+  public void drive(ChassisSpeeds speeds) {
+    swerveDrive.chassisVelocityCorrection = true;
+    swerveDrive.setHeadingCorrection(true);
+    swerveDrive.drive(speeds);
+  }
+
+  @Override
+  public void driveFieldOriented(ChassisSpeeds speeds) {
+    swerveDrive.chassisVelocityCorrection = true;
+    swerveDrive.setHeadingCorrection(true);
+    swerveDrive.drive(speeds);
+  }
+
   /**
-   * @return The current chassis speeds of the robot
+   * @return The current chassis speeds of the robot, field-oriented
    */
   @Override
   public ChassisSpeeds getChassisSpeeds() {

@@ -64,6 +64,8 @@ public interface DriveSubsystemIO {
   public default void updateInputs(DriveSubsystemIOInputs inputs) {}
 
   public default void setChassisSpeeds(ChassisSpeeds speeds) {}
+  public default void drive(ChassisSpeeds speeds) {}
+  public default void driveFieldOriented(ChassisSpeeds speeds) {}
 
   public default ChassisSpeeds getChassisSpeeds() {
     return null;
