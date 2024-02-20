@@ -2,21 +2,15 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.9080518161036326,
-      "y": 7.007220871584601
+      "x": 1.3707054194735169,
+      "y": 5.5430292057165325
     },
-    "rotation": -138.07745539942437
+    "rotation": -1.4320961841648223
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot"
-          }
-        },
         {
           "type": "parallel",
           "data": {
@@ -25,12 +19,6 @@
                 "type": "path",
                 "data": {
                   "pathName": "OTF - 1"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Intake"
                 }
               }
             ]

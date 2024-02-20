@@ -39,7 +39,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    SmartDashboard.updateValues();
+    // SmartDashboard.updateValues();
 
     Logger.recordOutput("Battery Voltage", RobotController.getBatteryVoltage());
     VirtualSubsystem.periodicAll();

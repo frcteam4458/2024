@@ -4,25 +4,27 @@
 
 package frc.robot.subsystems.climber;
 
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.HardwareConstants;
 
 /** Add your docs here. */
 public class Climb extends SubsystemBase {
-    Solenoid solenoid;
+    DoubleSolenoid solenoid;
 
     public Climb() {
-        solenoid = new Solenoid(PneumaticsModuleType.REVPH, HardwareConstants.kClimber);
+        solenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 0, 1);
     }
 
     public void set(boolean on) {
-        solenoid.set(on);
+        solenoid.set(on ? Value.kForward : Value.kReverse);
     }
 
     public boolean get() {
-        return solenoid.get();
+        if(solenoid.get().equals(Value.kForward)) return true;
+        return false;
     }
 
     public boolean toggle() {

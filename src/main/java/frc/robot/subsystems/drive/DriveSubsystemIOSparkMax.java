@@ -1,10 +1,13 @@
 package frc.robot.subsystems.drive;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkBase.IdleMode;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.Constants.HardwareConstants;
@@ -20,7 +23,6 @@ import swervelib.telemetry.SwerveDriveTelemetry;
 
 public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
   SwerveDrive swerveDrive;
-
   // CANSparkMax fl, fr, bl, br;
   // RelativeEncoder encoderFl, encoderFr, encoderBl, encoderBr;
   // MotorControllerGroup left, right;
@@ -166,6 +168,15 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
     getMotor(1, 0).setVoltage(right);
     getMotor(3, 0).setVoltage(right);
 
+  }
+
+  @Override
+  public void setCoast(boolean coast) {
+    IdleMode idleMode = coast ? IdleMode.kBrake : IdleMode.kCoast;
+    for(int i = 0; i < 4; i++) {
+      getMotor(i, 0).setIdleMode(idleMode);
+      getMotor(i, 1).setIdleMode(idleMode);
+    }
   }
 
 }

@@ -74,4 +74,5 @@ public interface DriveSubsystemIO {
   public default void setPose(Pose2d pose) {}
 
   public default void setVolts(double left, double right) {}
+  public default void setCoast(boolean coast) {}
 }

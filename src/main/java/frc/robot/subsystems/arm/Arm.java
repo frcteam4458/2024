@@ -174,4 +174,8 @@ public class Arm extends SubsystemBase {
         this.stow = stow;
     }
 
+    public static double getDesiredAngle(double distance) {
+        return 8 * distance;
+    }
+
 }

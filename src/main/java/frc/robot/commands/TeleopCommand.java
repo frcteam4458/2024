@@ -68,8 +68,8 @@ public class TeleopCommand extends Command {
 
   public double getOmega() {
     double omega = 0.0; // Turning
-    if (!Robot.isReal()) omega = -genericController.getRawAxis(4);
-    if (Robot.isReal()) omega = -genericController.getRawAxis(4);
+    if (!Robot.isReal()) omega = -genericController.getRawAxis(2);
+    if (Robot.isReal()) omega = -genericController.getRawAxis(2);
     // else omega = -controller.getRightX();
     if (Math.abs(omega) < 0.01) omega = 0;
     return omega;

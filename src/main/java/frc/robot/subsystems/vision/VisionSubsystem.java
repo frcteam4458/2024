@@ -64,16 +64,19 @@ public class VisionSubsystem extends SubsystemBase {
     frontCamera = new PhotonCamera("front");
     backCamera = new PhotonCamera("back");
 
-    SimCameraProperties properties = new SimCameraProperties();
-    properties.setCalibration(800, 600, Rotation2d.fromDegrees(70));
-
-    frontCameraSim = new PhotonCameraSim(frontCamera, properties);
-    backCameraSim = new PhotonCameraSim(backCamera, properties);
     if(Robot.isSimulation()) {
+      sim = new VisionSystemSim("main");
+
+      SimCameraProperties properties = new SimCameraProperties();
+      properties.setCalibration(800, 600, Rotation2d.fromDegrees(70));
+
+      frontCameraSim = new PhotonCameraSim(frontCamera, properties);
+      backCameraSim = new PhotonCameraSim(backCamera, properties);
+  
+      
       frontCameraSim.enableDrawWireframe(true);
       backCameraSim.enableDrawWireframe(true);
 
-      sim = new VisionSystemSim("main");
 
       sim.addCamera(frontCameraSim, robotToFrontCamera);
       sim.addCamera(backCameraSim, robotToBackCamera);
@@ -103,13 +106,6 @@ public class VisionSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // result = backCamera.getLatestResult();
-
-    // if(result.hasTargets()) {
-    //   targets = result.getTargets();
-    //   bestTarget = result.getBestTarget();
-    // }
-
     estimatedPoseFront = frontPoseEstimator.update();
     estimatedPoseBack = backPoseEstimator.update();
     if(estimatedPoseFront.isPresent()) {
@@ -124,7 +120,7 @@ public class VisionSubsystem extends SubsystemBase {
 
   @Override
   public void simulationPeriodic() {
-    // sim.update(DriveSubsystem.robotPose);
+    sim.update(DriveSubsystem.robotPose);
   }
 
   public List<PhotonTrackedTarget> getTargets() {
@@ -139,5 +135,18 @@ public class VisionSubsystem extends SubsystemBase {
 
   public boolean hasTargets() {
     return backCamera.getLatestResult().hasTargets() || frontCamera.getLatestResult().hasTargets();
+  }
+
+  public Optional<PhotonTrackedTarget> getTag(int id) {
+    for(PhotonTrackedTarget target : getTargets()) {
+      if(target.getFiducialId() == id) {
+        return Optional.of(target);
+      }
+    }
+    return Optional.empty();
+  }
+
+  public double distanceToTarget(PhotonTrackedTarget target) {
+    return Math.sqrt(Math.pow(target.getBestCameraToTarget().getX(), 2) + Math.pow(target.getBestCameraToTarget().getY(), 2)); 
   }
 }

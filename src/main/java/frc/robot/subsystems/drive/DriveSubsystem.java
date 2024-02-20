@@ -174,4 +174,8 @@ public class DriveSubsystem extends SubsystemBase {
   public void setVolts(double left, double right) {
     io.setVolts(left, right);
   }
+
+  public void setCoast(boolean coast) {
+    io.setCoast(coast);
+  }
 }
