@@ -43,6 +43,8 @@ public class Arm extends SubsystemBase {
 
     boolean stow = false;
 
+    boolean speakerMode = true;
+
     public Arm(ArmIO io) {
         this.io = io;
 
@@ -176,6 +178,14 @@ public class Arm extends SubsystemBase {
 
     public static double getDesiredAngle(double distance) {
         return 8 * distance;
+    }
+
+    public void setSpeakerMode(boolean speaker) {
+        this.speakerMode = speaker;
+    }
+
+    public boolean getSpeakerMode() {
+        return speakerMode;
     }
 
 }

@@ -196,7 +196,7 @@ public class RobotContainer {
     intakeCommandGroup = Commands.sequence(
       new InstantCommand(() -> {
         arm.setSetpoint(0);
-      }, arm)).withInterruptBehavior(InterruptionBehavior.kCancelSelf).asProxy().andThen(Commands.sequence(
+      })).withInterruptBehavior(InterruptionBehavior.kCancelSelf).asProxy().andThen(Commands.sequence(
       new Intake(feeder).asProxy(),
       new WaitCommand(0.25),
       new InstantCommand(() -> {
@@ -217,20 +217,20 @@ public class RobotContainer {
         Commands.runOnce(() -> {
           Logger.recordOutput("AimCommand/Running", true);
         }),
-        new FlywheelCommand(flywheel, PositionConstants.kShootVelocity),
+        new FlywheelCommand(flywheel, arm.getSpeakerMode() ? PositionConstants.kShootVelocity : 500),
 
         Commands.sequence(Commands.run(() -> {
-            Optional<PhotonTrackedTarget> target;
-            if(isRed()) target = visionSubsystem.getTag(4);
-            else target = visionSubsystem.getTag(7);
-            if(target.isPresent()) {
-              Translation2d speaker = PositionConstants.kSpeakerPosition;
-              Translation2d robot = driveSubsystem.getPose().getTranslation();
-              if(isRed()) speaker = GeometryUtil.flipFieldPosition(speaker);
-              double dist = robot.getDistance(speaker);
-              Logger.recordOutput("AimCommand/dist", dist);
-              arm.setSetpoint(Arm.getDesiredAngle(dist));
+            if(!arm.getSpeakerMode()) {
+              arm.setSetpoint(100);
+              return;
             }
+
+            Translation2d speaker = PositionConstants.kSpeakerPosition;
+            Translation2d robot = driveSubsystem.getPose().getTranslation();
+            if(isRed()) speaker = GeometryUtil.flipFieldPosition(speaker);
+            double dist = robot.getDistance(speaker);
+            Logger.recordOutput("AimCommand/dist", dist);
+            arm.setSetpoint(Arm.getDesiredAngle(dist));
           })
         )
     ).finallyDo((boolean interrupted) -> {
@@ -239,7 +239,7 @@ public class RobotContainer {
       if(interrupted) {
         feeder.set(0);
         flywheel.setRPM(1000);
-        System.out.println("Shoot interrupted!!");
+        System.out.println("Aim interrupted!!");
       }
     }));
 
@@ -258,15 +258,17 @@ public class RobotContainer {
         }).asProxy(),
         new InstantCommand(() -> {
             feeder.set(ControlConstants.kFeederMagnitude);
-          }
+          }, feeder
         ).asProxy(),
         new WaitCommand(0.2),
         new ProxyCommand(new InstantCommand(() -> {
           if(aimCommand.isScheduled()) aimCommand.cancel();
           feeder.set(0);
           flywheel.setRPM(1000);
-        }, flywheel, feeder))).finallyDo(() -> {
+        }, flywheel, feeder))).finallyDo((boolean interrupted) -> {
+          feeder.set(0);
           Logger.recordOutput("ShootCommand/Running", false);
+          if(interrupted) System.out.println("Shoot interrupted!!");
         });
 
     aimShootCommand = Commands.sequence(aimCommand.asProxy(), shootCommand.asProxy());
@@ -280,7 +282,7 @@ public class RobotContainer {
     intakeAim = Commands.sequence(intakeCommandGroup.asProxy(), aimCommand.asProxy());
  
     parallelShootAim = Commands.parallel(aimCommand.asProxy(), shootCommand.asProxy());
-    parallelShootAimIntake = Commands.sequence(parallelShootAim.asProxy(), intakeCommandGroup.asProxy());
+    parallelShootAimIntake = Commands.sequence(shootCommand.asProxy(), Commands.waitSeconds(0.1), intakeCommandGroup.asProxy());
 
     shootIntakeCommand = Commands.sequence(shootCommand.asProxy(), intakeCommandGroup.asProxy());
 
@@ -291,8 +293,12 @@ public class RobotContainer {
     NamedCommands.registerCommand("ShootIntakeAim", shootIntakeAimCommand);
     NamedCommands.registerCommand("IntakeAim", intakeAim);
     
-    operatorJoystick.button(1).onTrue(parallelShootAimIntake);
-    commandGeneric.button(12).onTrue(parallelShootAimIntake);
+    operatorJoystick.button(1).onTrue(shootCommand.asProxy().andThen(Commands.sequence(Commands.waitSeconds(0.1), Commands.runOnce(() -> {
+      intakeCommandGroup.schedule();
+    }).asProxy())));
+    commandGeneric.button(12).onTrue(shootCommand.asProxy().andThen(Commands.sequence(Commands.waitSeconds(0.1), Commands.runOnce(() -> {
+      intakeCommandGroup.schedule();
+    }).asProxy())));
     operatorJoystick.button(2).onTrue(intakeCommandGroup);
 
     commandGeneric.button(8).onTrue(Commands.runOnce(() -> { arm.setStow(true); }));
@@ -317,12 +323,20 @@ public class RobotContainer {
     NamedCommands.registerCommand("SpeakerAlign", new AlignCommand(driveSubsystem, visionSubsystem, RobotContainer::isRed, ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD));
     
     operatorJoystick.button(XboxController.Button.kX.value).onTrue(Commands.runOnce(() -> {
-      if(!aimCommand.isScheduled()) aimCommand.asProxy();
+      if(!aimCommand.isScheduled()) aimCommand.asProxy().schedule();;
     }));
     
     operatorJoystick.button(XboxController.Button.kX.value).whileTrue(
       new AlignCommand(driveSubsystem, visionSubsystem, RobotContainer::isRed, ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD)
     );
+
+    operatorJoystick.pov(0).onTrue(Commands.runOnce(() -> {
+      arm.setSpeakerMode(true);
+    }));
+
+    operatorJoystick.pov(180).onTrue(Commands.runOnce(() -> {
+      arm.setSpeakerMode(false);
+    }));
 
     // commandGeneric.button(12).whileTrue(NamedCommands.getCommand("SpeakerAlign"));
     // commandGeneric.button(12).whileTrue(new SpeakerAlignCommand(driveSubsystem, visionSubsystem, RobotContainer::isRed, 5.0, 0, 0));
