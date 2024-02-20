@@ -63,7 +63,7 @@ public class FlywheelIOSim implements FlywheelIO {
     public void setTopVoltage(double voltage) {
         if(RobotController.getBatteryVoltage() < voltage) voltage = RobotController.getBatteryVoltage();
         if(voltage < -RobotController.getBatteryVoltage()) voltage = -RobotController.getBatteryVoltage();
-
+        topVoltage = voltage;
         topFlywheel.setInputVoltage(voltage);
     }
 
@@ -71,7 +71,7 @@ public class FlywheelIOSim implements FlywheelIO {
     public void setBottomVoltage(double voltage) {
         if(RobotController.getBatteryVoltage() < voltage) voltage = RobotController.getBatteryVoltage();
         if(voltage < -RobotController.getBatteryVoltage()) voltage = -RobotController.getBatteryVoltage();
-
+        bottomVoltage = voltage;
         bottomFlywheel.setInputVoltage(voltage);
     }
 
