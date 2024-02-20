@@ -13,9 +13,11 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.util.GeometryUtil;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -153,10 +155,19 @@ public class RobotContainer {
 
   private void configureBindings() {
 
+
+    Commands.run(() -> {
+      Translation2d speaker = PositionConstants.kSpeakerPosition;
+      Translation2d robot = driveSubsystem.getPose().getTranslation();
+      if(isRed()) speaker = GeometryUtil.flipFieldPosition(speaker);
+      double dist = robot.getDistance(speaker);
+      Logger.recordOutput("Distance to Speaker", dist);
+    }).ignoringDisable(true).schedule();
+
     new Trigger(() -> {
       return DriverStation.isEnabled();
     }).onTrue(Commands.runOnce(() -> {
-      driveSubsystem.setPose(0, 0, 0);
+      // driveSubsystem.setPose(dr, 0, 0);
     }));
 
     SmartDashboard.putData("Nuclear Button", Commands.runOnce(() -> {
@@ -194,9 +205,13 @@ public class RobotContainer {
       Commands.runOnce(() -> {
         arm.setSetpoint(10);
       })
-    )).withInterruptBehavior(InterruptionBehavior.kCancelSelf).asProxy();
+    )).withInterruptBehavior(InterruptionBehavior.kCancelSelf).asProxy().finallyDo((boolean interrupted) -> {
+      if(interrupted) {
+        feeder.set(0);
+        System.out.println("Feed interrupted!!");
+      }
+    });
     NamedCommands.registerCommand("Intake", intakeCommandGroup);
-
 
     aimCommand = new ProxyCommand(Commands.parallel(
         Commands.runOnce(() -> {
@@ -209,14 +224,23 @@ public class RobotContainer {
             if(isRed()) target = visionSubsystem.getTag(4);
             else target = visionSubsystem.getTag(7);
             if(target.isPresent()) {
-              double dist = visionSubsystem.distanceToTarget(target.get());
+              Translation2d speaker = PositionConstants.kSpeakerPosition;
+              Translation2d robot = driveSubsystem.getPose().getTranslation();
+              if(isRed()) speaker = GeometryUtil.flipFieldPosition(speaker);
+              double dist = robot.getDistance(speaker);
               Logger.recordOutput("AimCommand/dist", dist);
               arm.setSetpoint(Arm.getDesiredAngle(dist));
             }
           })
         )
-    ).finallyDo(() -> {
+    ).finallyDo((boolean interrupted) -> {
       Logger.recordOutput("AimCommand/Running", false);
+      
+      if(interrupted) {
+        feeder.set(0);
+        flywheel.setRPM(1000);
+        System.out.println("Shoot interrupted!!");
+      }
     }));
 
     shootCommand = Commands.sequence(
