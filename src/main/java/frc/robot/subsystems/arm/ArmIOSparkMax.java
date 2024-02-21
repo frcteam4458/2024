@@ -5,6 +5,7 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.RobotController;
@@ -60,6 +61,17 @@ public class ArmIOSparkMax implements ArmIO {
     @Override
     public double getAngle() {
         return absoluteEncoder.getDistance();
+    }
+
+    @Override
+    public void setCoast(boolean coast) {
+        armMotor.setIdleMode(coast ? IdleMode.kCoast : IdleMode.kBrake);
+        armMotorFollower.setIdleMode(coast ? IdleMode.kCoast : IdleMode.kBrake);
+    }
+
+    public boolean getCoast(int motor) {
+        if(motor == 0) return armMotor.getIdleMode() == IdleMode.kCoast;
+        else return armMotorFollower.getIdleMode() == IdleMode.kCoast;
     }
 
 }

@@ -72,8 +72,11 @@ public class DriveSubsystem extends SubsystemBase {
     robotPose = getPose();
 
     // Perhaps its a good idea to enable pose estimation from a command rather than statically accessing the vision subsystem
-    // if(VisionSubsystem.estimatedPoseBack.isPresent())
-      // addVisionMeasurement(VisionSubsystem.estimatedPoseBack.get().estimatedPose, VisionSubsystem.estimatedPoseBack.get().timestampSeconds);
+    if(VisionSubsystem.estimatedPoseBack.isPresent())
+      addVisionMeasurement(VisionSubsystem.estimatedPoseBack.get().estimatedPose, VisionSubsystem.estimatedPoseBack.get().timestampSeconds);
+
+    if(VisionSubsystem.estimatedPoseFront.isPresent())
+      addVisionMeasurement(VisionSubsystem.estimatedPoseFront.get().estimatedPose, VisionSubsystem.estimatedPoseFront.get().timestampSeconds);
   }
 
   public void addVisionMeasurement(Pose3d pose, double timestamp) {
@@ -95,7 +98,7 @@ public class DriveSubsystem extends SubsystemBase {
             x * HardwareConstants.kMaxSpeed,
             y * HardwareConstants.kMaxSpeed,
             omega * HardwareConstants.kMaxAngVel);
-    drive(speeds);
+    driveChassisSpeeds(speeds);
   }
 
   public void arcadeDriveFieldOriented(double x, double y, double omega) {
@@ -109,7 +112,7 @@ public class DriveSubsystem extends SubsystemBase {
             y * HardwareConstants.kMaxSpeed,
             omega * HardwareConstants.kMaxAngVel,
             new Rotation2d(Math.toRadians(getYaw())));
-    driveFieldOriented(speeds);
+    drive(speeds);
   }
 
   public void setWheelSpeeds(double left, double right) {

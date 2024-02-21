@@ -15,4 +15,7 @@ public interface ArmIO {
   public default double getAngle() { return 0; }
 
   public default void updateSim() {}
+
+  public default void setCoast(boolean coast) {}
+  public default boolean getCoast(int motor) { return false; }
 }

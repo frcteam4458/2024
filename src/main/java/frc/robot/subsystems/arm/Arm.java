@@ -109,6 +109,10 @@ public class Arm extends SubsystemBase {
             Logger.recordOutput("Arm/output", output);
             setVoltage(output);
         }
+
+        if(DriverStation.isDisabled()) {
+            setSetpoint(getAngle());
+        }
     }
 
     @Override
@@ -186,6 +190,14 @@ public class Arm extends SubsystemBase {
 
     public boolean getSpeakerMode() {
         return speakerMode;
+    }
+
+    public void setCoast(boolean coast) {
+        io.setCoast(coast);
+    }
+
+    public boolean getCoast(int motor) {
+        return io.getCoast(motor);
     }
 
 }

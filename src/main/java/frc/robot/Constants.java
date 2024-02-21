@@ -79,7 +79,7 @@ public final class Constants {
 
     public static final boolean kFlywheelPID = true;
 
-    public static final double kFeederMagnitude = 0.8;
+    public static final double kFeederMagnitude = 1.0;
 
     // Ramsete settings
     public static final double kB = 2.0;

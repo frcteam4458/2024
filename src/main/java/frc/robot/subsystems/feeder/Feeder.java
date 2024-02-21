@@ -41,10 +41,7 @@ public class Feeder extends SubsystemBase {
             // if((12 * ControlConstants.kFeederMagnitude) < output) {
             //     output = 12 * ControlConstants.kFeederMagnitude;
             // }
-            if(!driver.getRawButton(4))
-                setVoltage(output);
-            else
-                setVoltage(0);
+            setVoltage(output);
         }
 
         if(driver.getRawButton(4)) {

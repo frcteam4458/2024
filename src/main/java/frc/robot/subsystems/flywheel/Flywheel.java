@@ -72,13 +72,8 @@ public class Flywheel extends SubsystemBase {
 
             Logger.recordOutput("Flywheel/TopOutput", topOutput + feedforward.calculate(rpm));
             Logger.recordOutput("Flywheel/BottomOutput", bottomOutput + feedforward.calculate(rpm));
-            if(!driver.getRawButton(4)) {
-                io.setTopVoltage(topOutput + feedforward.calculate(rpm));
-                io.setBottomVoltage(bottomOutput + feedforward.calculate(rpm));
-            } else {
-                io.setTopVoltage(0);
-                io.setBottomVoltage(0);
-            }
+            io.setTopVoltage(topOutput + feedforward.calculate(rpm));
+            io.setBottomVoltage(bottomOutput + feedforward.calculate(rpm));
         }
     }
 

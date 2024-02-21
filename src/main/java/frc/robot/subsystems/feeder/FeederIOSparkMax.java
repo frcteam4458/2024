@@ -33,7 +33,7 @@ public class FeederIOSparkMax implements FeederIO {
 
         feeder.restoreFactoryDefaults();
         feeder.setSmartCurrentLimit(20);
-        encoder.setPositionConversionFactor(0.25);
+        encoder.setPositionConversionFactor(0.05);
         feeder.setOpenLoopRampRate(0);
         feeder.setClosedLoopRampRate(0);
 

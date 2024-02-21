@@ -156,32 +156,37 @@ public class RobotContainer {
   private void configureBindings() {
 
 
-    Commands.run(() -> {
-      Translation2d speaker = PositionConstants.kSpeakerPosition;
-      Translation2d robot = driveSubsystem.getPose().getTranslation();
-      if(isRed()) speaker = GeometryUtil.flipFieldPosition(speaker);
-      double dist = robot.getDistance(speaker);
-      Logger.recordOutput("Distance to Speaker", dist);
-    }).ignoringDisable(true).schedule();
+    // Commands.run(() -> {
+    //   Translation2d speaker = PositionConstants.kSpeakerPosition;
+    //   Translation2d robot = driveSubsystem.getPose().getTranslation();
+    //   if(isRed()) speaker = GeometryUtil.flipFieldPosition(speaker);
+    //   double dist = robot.getDistance(speaker);
+    //   Logger.recordOutput("Distance to Speaker", dist);
+    //   Logger.recordOutput("DIO 3", dio.get());
+    // }).ignoringDisable(true).schedule();
 
     new Trigger(() -> {
       return DriverStation.isEnabled();
     }).onTrue(Commands.runOnce(() -> {
       // driveSubsystem.setPose(dr, 0, 0);
+      if(DriverStation.isAutonomous()) {
+        arm.setSetpoint(0);
+      }
     }));
 
     SmartDashboard.putData("Nuclear Button", Commands.runOnce(() -> {
       CommandScheduler.getInstance().cancelAll();
     }));
 
-    new Trigger(() -> { return dio.get(); }).onTrue(Commands.runOnce(() -> {
-      driveSubsystem.setCoast(true);
-    })).onFalse(Commands.runOnce(() -> {
-      driveSubsystem.setCoast(false);
-    }));
-
-    driveSubsystem.setDefaultCommand(teleopCommand);
-
+    Commands.run(() -> {
+      if(DriverStation.isEnabled()) return;
+      driveSubsystem.setCoast(!dio.get());
+      arm.setCoast(!dio.get());
+      Logger.recordOutput("ArmCoast", arm.getCoast( 0));
+      Logger.recordOutput("ArmCoastFollow", arm.getCoast(1));
+      driveSubsystem.setDefaultCommand(teleopCommand);
+    }).ignoringDisable(true).schedule();
+      
     configureDriveSetpoints();
     configureArmJoystick();
 

@@ -123,16 +123,16 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
 
   @Override
   public void drive(ChassisSpeeds speeds) {
-    swerveDrive.chassisVelocityCorrection = true;
+    // swerveDrive.chassisVelocityCorrection = true;
     swerveDrive.setHeadingCorrection(true);
     swerveDrive.drive(speeds);
   }
 
   @Override
   public void driveFieldOriented(ChassisSpeeds speeds) {
-    swerveDrive.chassisVelocityCorrection = true;
+    // swerveDrive.chassisVelocityCorrection = true;
     swerveDrive.setHeadingCorrection(true);
-    swerveDrive.drive(speeds);
+    swerveDrive.driveFieldOriented(speeds);
   }
 
   /**
