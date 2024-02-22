@@ -37,21 +37,15 @@
           }
         },
         {
-          "type": "path",
+          "type": "wait",
           "data": {
-            "pathName": "2 Note Top - 2"
+            "waitTime": 0.25
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Shoot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "2 Note Top - 3"
           }
         }
       ]

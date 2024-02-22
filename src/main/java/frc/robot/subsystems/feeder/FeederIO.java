@@ -24,4 +24,6 @@ public interface FeederIO {
     public default void setVoltage(double volts) {}
     public default void set(double value) {}
 
+    public default void setCoast(boolean coast) {}
+
 }

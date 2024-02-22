@@ -42,10 +42,10 @@ public final class Constants {
 
     public static final double kArmFloorAngle = 0.0;
 
-    public static final Translation2d kSpeakerPosition = new Translation2d(0.5, 5.5);
+    public static final Translation2d kSpeakerPosition = new Translation2d(0.0, 5.5);
 
     public static final double kSpeakerAngle = 30.0;
-    public static final double kShootVelocity = 2500.0;
+    public static final double kShootVelocity = 5000.0;
   }
 
   public static class ControlConstants {
@@ -53,7 +53,7 @@ public final class Constants {
     public static final double kI = 0.0;
     public static final double kD = 0.0;
 
-    public static final double kAP = 5.0;
+    public static final double kAP = 0.5;
     public static final double kAI = 0.0;
     public static final double kAD = 0.0;
 

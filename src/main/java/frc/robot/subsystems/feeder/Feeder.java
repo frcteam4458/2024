@@ -43,10 +43,6 @@ public class Feeder extends SubsystemBase {
             // }
             setVoltage(output);
         }
-
-        if(driver.getRawButton(4)) {
-            setVoltage(0);
-        }
     }
 
     public void set(double value) {
@@ -94,5 +90,8 @@ public class Feeder extends SubsystemBase {
         this.magnitude = magnitude;
     }
 
+    public void setCoast(boolean coast) {
+        io.setCoast(coast);
+    }
     
 }

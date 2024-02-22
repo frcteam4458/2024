@@ -43,7 +43,6 @@ public class TeleopCommand extends Command {
 
   @Override
   public void execute() {  
-    driveSubsystem.arcadeDrive(1, 0, 0);  
     if(genericController.getRawButton(5))
       driveSubsystem.arcadeDriveFieldOriented(getX(), getY(), getOmega());
     else

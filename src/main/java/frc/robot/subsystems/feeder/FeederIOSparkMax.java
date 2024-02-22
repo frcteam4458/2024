@@ -7,6 +7,7 @@ package frc.robot.subsystems.feeder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.REVPhysicsSim;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -68,5 +69,10 @@ public class FeederIOSparkMax implements FeederIO {
     @Override
     public void set(double value) {
         feeder.set(value);
+    }
+
+    @Override
+    public void setCoast(boolean coast) {
+        feeder.setIdleMode(coast ? IdleMode.kCoast : IdleMode.kBrake);
     }
 }

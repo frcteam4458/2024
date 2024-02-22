@@ -97,7 +97,8 @@ public class Arm extends SubsystemBase {
         if(ControlConstants.kArmPid) {
             double output = 0.0;
             if(stow) {
-                profiledPIDController.setGoal(10);
+                if(!DriverStation.isDisabled())
+                profiledPIDController.setGoal(5);
             } else {
                 profiledPIDController.setGoal(setpoint);
             }
@@ -181,7 +182,7 @@ public class Arm extends SubsystemBase {
     }
 
     public static double getDesiredAngle(double distance) {
-        return 8 * distance;
+        return 9.72 + (19.1 * distance) + (-2.61 * Math.pow(distance, 2));
     }
 
     public void setSpeakerMode(boolean speaker) {

@@ -16,6 +16,7 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.util.GeometryUtil;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -75,6 +76,11 @@ public class RobotContainer {
 
   private final DigitalInput dio;
 
+  private final Debouncer debounce2500;
+  private final Debouncer debounce3000;
+  private final Debouncer debounce3500;
+  private final Debouncer debounce4000;
+
   private DriveSubsystem driveSubsystem;
   private Arm arm;
   private Flywheel flywheel;
@@ -98,9 +104,16 @@ public class RobotContainer {
   private Command parallelShootAimIntake;
   private Command shootIntakeCommand;
 
+  private Command yawCommand;
+
   private SendableChooser<String> autoChooser = new SendableChooser<String>();
 
   public RobotContainer() {
+    debounce2500 = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
+    debounce3000 = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
+    debounce3500 = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
+    debounce4000 = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
+
     driveSubsystem = new DriveSubsystem(new DriveSubsystemIOSparkMax());
     if(Robot.isReal()) {
       arm = new Arm(new ArmIOSparkMax());
@@ -178,15 +191,16 @@ public class RobotContainer {
       CommandScheduler.getInstance().cancelAll();
     }));
 
+    yawCommand = new AlignCommand(driveSubsystem, visionSubsystem, RobotContainer::isRed, ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD);
+
     Commands.run(() -> {
       if(DriverStation.isEnabled()) return;
       driveSubsystem.setCoast(!dio.get());
       arm.setCoast(!dio.get());
-      Logger.recordOutput("ArmCoast", arm.getCoast( 0));
-      Logger.recordOutput("ArmCoastFollow", arm.getCoast(1));
-      driveSubsystem.setDefaultCommand(teleopCommand);
+      feeder.setCoast(!dio.get());
     }).ignoringDisable(true).schedule();
-      
+    driveSubsystem.setDefaultCommand(teleopCommand);
+
     configureDriveSetpoints();
     configureArmJoystick();
 
@@ -203,13 +217,13 @@ public class RobotContainer {
         arm.setSetpoint(0);
       })).withInterruptBehavior(InterruptionBehavior.kCancelSelf).asProxy().andThen(Commands.sequence(
       new Intake(feeder).asProxy(),
+      Commands.runOnce(() -> {
+        arm.setSetpoint(10);
+      }),
       new WaitCommand(0.25),
       new InstantCommand(() -> {
         feeder.setSetpoint(feeder.getPosition() + 0.75);
-      }, feeder).asProxy(),
-      Commands.runOnce(() -> {
-        arm.setSetpoint(10);
-      })
+      }, feeder).asProxy()
     )).withInterruptBehavior(InterruptionBehavior.kCancelSelf).asProxy().finallyDo((boolean interrupted) -> {
       if(interrupted) {
         feeder.set(0);
@@ -222,20 +236,43 @@ public class RobotContainer {
         Commands.runOnce(() -> {
           Logger.recordOutput("AimCommand/Running", true);
         }),
-        new FlywheelCommand(flywheel, arm.getSpeakerMode() ? PositionConstants.kShootVelocity : 500),
+        // new FlywheelCommand(flywheel, arm.getSpeakerMode() ? PositionConstants.kShootVelocity : 1000),
 
         Commands.sequence(Commands.run(() -> {
             if(!arm.getSpeakerMode()) {
               arm.setSetpoint(100);
+              flywheel.setRPM(1000);
               return;
             }
-
-            Translation2d speaker = PositionConstants.kSpeakerPosition;
+            Translation2d speaker = PositionConstants.kSpeakerPosition.plus(new Translation2d(0.5, 0));
             Translation2d robot = driveSubsystem.getPose().getTranslation();
             if(isRed()) speaker = GeometryUtil.flipFieldPosition(speaker);
             double dist = robot.getDistance(speaker);
             Logger.recordOutput("AimCommand/dist", dist);
-            arm.setSetpoint(Arm.getDesiredAngle(dist));
+
+            boolean zone2500 = debounce2500.calculate(dist < 1.8);
+            boolean zone3500 = debounce3500.calculate(1.8 < dist && dist < 2.4);
+            boolean zone4000 = debounce4000.calculate(2.4 < dist);
+
+            Logger.recordOutput("AimCommand/Zone2500", zone2500);
+            Logger.recordOutput("AimCommand/Zone3500", zone3500);
+            Logger.recordOutput("AimCommand/Zone4000", zone4000);
+            // flywheel.setRPM(4000);
+            if(zone2500) {
+              flywheel.setRPM(2500);
+              arm.setSetpoint(-3.64 + 43.5 * dist - 12.9 * dist * dist);
+            }
+
+            if(zone3500) {
+              flywheel.setRPM(3500);
+              arm.setSetpoint(36.6 - 4.43 * dist + 2.27 * dist * dist);
+            }
+
+            if(zone4000) {
+              flywheel.setRPM(4000);
+              arm.setSetpoint(-2.94 + 27.3 * dist - 3.98 * dist * dist);
+            }
+            // arm.setSetpoint(Arm.getDesiredAngle(dist));
           })
         )
     ).finallyDo((boolean interrupted) -> {
@@ -243,7 +280,7 @@ public class RobotContainer {
       
       if(interrupted) {
         feeder.set(0);
-        flywheel.setRPM(1000);
+        // flywheel.setRPM(1000);
         System.out.println("Aim interrupted!!");
       }
     }));
@@ -257,7 +294,7 @@ public class RobotContainer {
             feeder.set(0);
           }
         }),
-        Commands.waitSeconds(0.1),
+        Commands.waitSeconds(0.2),
         Commands.waitUntil(() -> {
           return (Math.abs(arm.getSetpoint() - arm.getAngle()) < 1.0) && flywheel.atSetpoint();
         }).asProxy(),
@@ -265,12 +302,13 @@ public class RobotContainer {
             feeder.set(ControlConstants.kFeederMagnitude);
           }, feeder
         ).asProxy(),
-        new WaitCommand(0.2),
+        new WaitCommand(0.4),
         new ProxyCommand(new InstantCommand(() -> {
           if(aimCommand.isScheduled()) aimCommand.cancel();
           feeder.set(0);
           flywheel.setRPM(1000);
         }, flywheel, feeder))).finallyDo((boolean interrupted) -> {
+          if(yawCommand.isScheduled()) yawCommand.cancel();
           feeder.set(0);
           Logger.recordOutput("ShootCommand/Running", false);
           if(interrupted) System.out.println("Shoot interrupted!!");
@@ -301,7 +339,7 @@ public class RobotContainer {
     operatorJoystick.button(1).onTrue(shootCommand.asProxy().andThen(Commands.sequence(Commands.waitSeconds(0.1), Commands.runOnce(() -> {
       intakeCommandGroup.schedule();
     }).asProxy())));
-    commandGeneric.button(12).onTrue(shootCommand.asProxy().andThen(Commands.sequence(Commands.waitSeconds(0.1), Commands.runOnce(() -> {
+    commandGeneric.button(10).onTrue(shootCommand.asProxy().andThen(Commands.sequence(Commands.waitSeconds(0.1), Commands.runOnce(() -> {
       intakeCommandGroup.schedule();
     }).asProxy())));
     operatorJoystick.button(2).onTrue(intakeCommandGroup);
@@ -321,18 +359,19 @@ public class RobotContainer {
       feeder.setLock(false);
     }));
 
+
     commandGeneric.button(11).onTrue(new HeadingCommand(driveSubsystem, 0));
-    commandGeneric.button(16).onTrue(new HeadingCommand(driveSubsystem, 90));
+    commandGeneric.button(16).onTrue(new HeadingCommand(driveSubsystem, 270));
     commandGeneric.button(13).onTrue(new HeadingCommand(driveSubsystem, 180));
-    commandGeneric.button(14).onTrue(new HeadingCommand(driveSubsystem, 270));
-    NamedCommands.registerCommand("SpeakerAlign", new AlignCommand(driveSubsystem, visionSubsystem, RobotContainer::isRed, ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD));
+    commandGeneric.button(14).onTrue(new HeadingCommand(driveSubsystem, 90));
+    NamedCommands.registerCommand("SpeakerAlign", yawCommand);
     
-    operatorJoystick.button(XboxController.Button.kX.value).onTrue(Commands.runOnce(() -> {
-      if(!aimCommand.isScheduled()) aimCommand.asProxy().schedule();;
-    }));
+    // operatorJoystick.button(XboxController.Button.kX.value).onTrue(Commands.runOnce(() -> {
+    //   if(!aimCommand.isScheduled()) aimCommand.asProxy().schedule();;
+    // }));
     
     operatorJoystick.button(XboxController.Button.kX.value).whileTrue(
-      new AlignCommand(driveSubsystem, visionSubsystem, RobotContainer::isRed, ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD)
+      yawCommand
     );
 
     operatorJoystick.pov(0).onTrue(Commands.runOnce(() -> {

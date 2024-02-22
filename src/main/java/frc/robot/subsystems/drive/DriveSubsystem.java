@@ -98,7 +98,7 @@ public class DriveSubsystem extends SubsystemBase {
             x * HardwareConstants.kMaxSpeed,
             y * HardwareConstants.kMaxSpeed,
             omega * HardwareConstants.kMaxAngVel);
-    driveChassisSpeeds(speeds);
+    drive(speeds);
   }
 
   public void arcadeDriveFieldOriented(double x, double y, double omega) {
@@ -111,7 +111,7 @@ public class DriveSubsystem extends SubsystemBase {
             x * HardwareConstants.kMaxSpeed,
             y * HardwareConstants.kMaxSpeed,
             omega * HardwareConstants.kMaxAngVel,
-            new Rotation2d(Math.toRadians(getYaw())));
+            getPose().getRotation());
     drive(speeds);
   }
 

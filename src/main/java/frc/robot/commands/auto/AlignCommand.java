@@ -59,6 +59,12 @@ public class AlignCommand extends TeleopCommand {
             (driveSubsystem.getPose().getX() - translation.getX()))
         );
 
+        if(driveSubsystem.getPose().getX() - translation.getX() > 0) {
+            // rotation = rotation.minus(Rotation2d.fromDegrees(2));
+        } else {
+            // rotation = rotation.plus(Rotation2d.fromDegrees(2));
+        }
+
         if(flip.getAsBoolean()) {
             return rotation;
         } else {
