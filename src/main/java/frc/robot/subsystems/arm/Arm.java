@@ -120,9 +120,11 @@ public class Arm extends SubsystemBase {
     public void simulationPeriodic() {
         io.updateSim();
     }
-
+    
     public void setSetpoint(double angle) {
         setpoint = angle;
+        if(Math.abs(setpoint - angle) < 5) profiledPIDController.setConstraints(new TrapezoidProfile.Constraints(500, 500));
+        else profiledPIDController.setConstraints(profile);
         if(setpoint < HardwareConstants.kArmRotPhysicalMin) {
             setpoint = HardwareConstants.kArmRotPhysicalMin;
         }
