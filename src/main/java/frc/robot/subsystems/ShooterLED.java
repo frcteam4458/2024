@@ -62,7 +62,7 @@ public class ShooterLED extends VirtualSubsystem {
   // Constants
   private static final boolean prideLeds = false;
   private static final int minLoopCycleCount = 10;
-  private static final int length = 17;
+  private static final int length = 37;
   private static final int underglowLen = 30;
   private static final int staticLength = 5;
   private static final int staticSectionLength = 3;

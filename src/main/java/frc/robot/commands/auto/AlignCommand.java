@@ -53,17 +53,13 @@ public class AlignCommand extends TeleopCommand {
         Logger.recordOutput("X Diff", (driveSubsystem.getPose().getX() - translation.getX()));
         Logger.recordOutput("Y Diff", (driveSubsystem.getPose().getY() - translation.getY()));
         var rotation = Rotation2d.fromRadians(
-            // Math.atan((driveSubsystem.getPose().getY() - translation.getY()) /
-            // (driveSubsystem.getPose().getX() - translation.getX()))
             Math.atan2((driveSubsystem.getPose().getY() - translation.getY()),
             (driveSubsystem.getPose().getX() - translation.getX()))
         );
 
-        if(driveSubsystem.getPose().getX() - translation.getX() > 0) {
-            // rotation = rotation.minus(Rotation2d.fromDegrees(2));
-        } else {
-            // rotation = rotation.plus(Rotation2d.fromDegrees(2));
-        }
+        double yVel = driveSubsystem.getChassisSpeeds().vyMetersPerSecond;
+
+        rotation = rotation.plus(Rotation2d.fromDegrees(yVel*10));
 
         if(flip.getAsBoolean()) {
             return rotation;

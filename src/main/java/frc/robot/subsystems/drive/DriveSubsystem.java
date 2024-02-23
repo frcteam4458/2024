@@ -18,6 +18,7 @@ import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.Constants.HardwareConstants;
 import frc.robot.Constants.OperatorConstants;
@@ -72,10 +73,10 @@ public class DriveSubsystem extends SubsystemBase {
     robotPose = getPose();
 
     // Perhaps its a good idea to enable pose estimation from a command rather than statically accessing the vision subsystem
-    if(VisionSubsystem.estimatedPoseBack.isPresent())
+    if(VisionSubsystem.estimatedPoseBack.isPresent() && Robot.isReal())
       addVisionMeasurement(VisionSubsystem.estimatedPoseBack.get().estimatedPose, VisionSubsystem.estimatedPoseBack.get().timestampSeconds);
 
-    if(VisionSubsystem.estimatedPoseFront.isPresent())
+    if(VisionSubsystem.estimatedPoseFront.isPresent() && Robot.isReal())
       addVisionMeasurement(VisionSubsystem.estimatedPoseFront.get().estimatedPose, VisionSubsystem.estimatedPoseFront.get().timestampSeconds);
   }
 

@@ -23,6 +23,7 @@ import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonVersion;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
@@ -55,15 +56,15 @@ public class VisionSubsystem extends SubsystemBase {
   Transform3d robotToBackCamera;
 
   public VisionSubsystem() {
-
+    Logger.recordOutput("PV", PhotonVersion.versionString);
     robotToFrontCamera = new Transform3d(Units.inchesToMeters(-9.5),
       0, Units.inchesToMeters(17.25), new Rotation3d(0, Units.degreesToRadians(-15), Units.degreesToRadians(0)));
 
     robotToBackCamera = new Transform3d(Units.inchesToMeters(-10.915),
       0, Units.inchesToMeters(17.25), new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(180)));
 
-    frontCamera = new PhotonCamera("front");
-    backCamera = new PhotonCamera("back");
+    frontCamera = new PhotonCamera("Front");
+    backCamera = new PhotonCamera("Back");
 
     if(Robot.isSimulation()) {
       sim = new VisionSystemSim("main");
@@ -109,6 +110,7 @@ public class VisionSubsystem extends SubsystemBase {
   public void periodic() {
     estimatedPoseFront = frontPoseEstimator.update();
     estimatedPoseBack = backPoseEstimator.update();
+
     if(estimatedPoseFront.isPresent()) {
       Logger.recordOutput("Vision/EstimatedPoseFront", estimatedPoseFront.get().estimatedPose.toPose2d());
     }

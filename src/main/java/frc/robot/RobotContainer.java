@@ -138,6 +138,7 @@ public class RobotContainer {
     String[] autos = new String[]{
       "OTF",
       "2 Note Top",
+      "Right 3 Note",
 
       "Quasistatic Forward",
       "Quasistatic Backward",
@@ -152,7 +153,7 @@ public class RobotContainer {
 
     SmartDashboard.putData("Autonomous Chooser", autoChooser);
 
-        dio = new DigitalInput(3);
+    dio = new DigitalInput(3);
 
     configureBindings();
     Autos.constructAutoBuilder(driveSubsystem);
@@ -160,6 +161,7 @@ public class RobotContainer {
     driveSubsystem.setPose(0, 0, 0);
 
     SmartDashboard.putNumber("Flywheel RPM", 0);
+    SmartDashboard.putNumber("Arm Angle", 0);
     ShooterLED.getInstance().intakeReady = true;
 
   }
@@ -167,21 +169,9 @@ public class RobotContainer {
 
 
   private void configureBindings() {
-
-
-    // Commands.run(() -> {
-    //   Translation2d speaker = PositionConstants.kSpeakerPosition;
-    //   Translation2d robot = driveSubsystem.getPose().getTranslation();
-    //   if(isRed()) speaker = GeometryUtil.flipFieldPosition(speaker);
-    //   double dist = robot.getDistance(speaker);
-    //   Logger.recordOutput("Distance to Speaker", dist);
-    //   Logger.recordOutput("DIO 3", dio.get());
-    // }).ignoringDisable(true).schedule();
-
     new Trigger(() -> {
       return DriverStation.isEnabled();
     }).onTrue(Commands.runOnce(() -> {
-      // driveSubsystem.setPose(dr, 0, 0);
       if(DriverStation.isAutonomous()) {
         arm.setSetpoint(0);
       }
@@ -236,8 +226,6 @@ public class RobotContainer {
         Commands.runOnce(() -> {
           Logger.recordOutput("AimCommand/Running", true);
         }),
-        // new FlywheelCommand(flywheel, arm.getSpeakerMode() ? PositionConstants.kShootVelocity : 1000),
-
         Commands.sequence(Commands.run(() -> {
             if(!arm.getSpeakerMode()) {
               arm.setSetpoint(100);
@@ -250,29 +238,18 @@ public class RobotContainer {
             double dist = robot.getDistance(speaker);
             Logger.recordOutput("AimCommand/dist", dist);
 
-            boolean zone2500 = debounce2500.calculate(dist < 1.8);
-            boolean zone3500 = debounce3500.calculate(1.8 < dist && dist < 2.4);
-            boolean zone4000 = debounce4000.calculate(2.4 < dist);
+            // boolean zone2500 = debounce2500.calculate(dist < 1.8);
+            // boolean zone3500 = debounce3500.calculate(1.8 < dist && dist < 2.4);
+            // boolean zone4000 = debounce4000.calculate(2.4 < dist);
 
-            Logger.recordOutput("AimCommand/Zone2500", zone2500);
-            Logger.recordOutput("AimCommand/Zone3500", zone3500);
-            Logger.recordOutput("AimCommand/Zone4000", zone4000);
-            // flywheel.setRPM(4000);
-            if(zone2500) {
-              flywheel.setRPM(2500);
-              arm.setSetpoint(-3.64 + 43.5 * dist - 12.9 * dist * dist);
-            }
+            // Logger.recordOutput("AimCommand/Zone2500", zone2500);
+            // Logger.recordOutput("AimCommand/Zone3500", zone3500);
+            // Logger.recordOutput("AimCommand/Zone4000", zone4000);
+            // flywheel.setRPM(SmartDashboard.getNumber("Flywheel RPM", 0.0));
+            // arm.setSetpoint(SmartDashboard.getNumber("Arm Angle", 0.0));
 
-            if(zone3500) {
-              flywheel.setRPM(3500);
-              arm.setSetpoint(36.6 - 4.43 * dist + 2.27 * dist * dist);
-            }
-
-            if(zone4000) {
-              flywheel.setRPM(4000);
-              arm.setSetpoint(-2.94 + 27.3 * dist - 3.98 * dist * dist);
-            }
-            // arm.setSetpoint(Arm.getDesiredAngle(dist));
+            flywheel.setRPM(Interpolation.getRPM(dist));
+            arm.setSetpoint(Interpolation.getAngle(dist));
           })
         )
     ).finallyDo((boolean interrupted) -> {
@@ -366,9 +343,9 @@ public class RobotContainer {
     commandGeneric.button(14).onTrue(new HeadingCommand(driveSubsystem, 90));
     NamedCommands.registerCommand("SpeakerAlign", yawCommand);
     
-    // operatorJoystick.button(XboxController.Button.kX.value).onTrue(Commands.runOnce(() -> {
-    //   if(!aimCommand.isScheduled()) aimCommand.asProxy().schedule();;
-    // }));
+    operatorJoystick.button(XboxController.Button.kX.value).onTrue(Commands.runOnce(() -> {
+      if(!aimCommand.isScheduled()) aimCommand.asProxy().schedule();;
+    }));
     
     operatorJoystick.button(XboxController.Button.kX.value).whileTrue(
       yawCommand
@@ -376,10 +353,15 @@ public class RobotContainer {
 
     operatorJoystick.pov(0).onTrue(Commands.runOnce(() -> {
       arm.setSpeakerMode(true);
+      SmartDashboard.putBoolean("Speaker", true);
+      SmartDashboard.putBoolean("Amp", false);
     }));
 
     operatorJoystick.pov(180).onTrue(Commands.runOnce(() -> {
       arm.setSpeakerMode(false);
+      SmartDashboard.putBoolean("Speaker", false);
+      SmartDashboard.putBoolean("Amp", true);
+      arm.setSetpoint(45);
     }));
 
     // commandGeneric.button(12).whileTrue(NamedCommands.getCommand("SpeakerAlign"));
@@ -443,60 +425,10 @@ public class RobotContainer {
   }
 
   public void configureDriveSetpoints() {
-    buttonTriggerPIDAlign(driverController.a(), PositionConstants.kAmpPose, RobotContainer::isRed,
+    buttonTriggerPIDAlign(operatorJoystick.button(4), PositionConstants.kAmpPose, RobotContainer::isRed,
       ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
       ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
     );
-    // driverController.a().onTrue(NamedCommands.getCommand("ArmAmp"));
-    
-    // buttonTriggerPIDAlign(driverController.x(), PositionConstants.kSource1Pose, RobotContainer::isBlue,
-    //   ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
-    //   ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
-    // );
-    // driverController.x().onTrue(NamedCommands.getCommand("ArmSource"));
-
-    // buttonTriggerPIDAlign(driverController.y(), PositionConstants.kSource2Pose, RobotContainer::isBlue,
-    //   ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
-    //   ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
-    // );
-    // driverController.y().onTrue(NamedCommands.getCommand("ArmSource"));
-
-    // buttonTriggerPIDAlign(driverController.b(), PositionConstants.kSource3Pose, RobotContainer::isBlue,
-    //   ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
-    //   ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
-    // );
-    // driverController.b().onTrue(NamedCommands.getCommand("ArmSource"));
-    // driverController.y().onTrue(new InstantCommand(() -> {
-    //   arm.setSetpoint(90);
-    // }, arm));
-
-    // driverController.rightBumper().onTrue(new InstantCommand(() -> {
-    //   arm.setSetpoint(PositionConstants.kSpeakerAngle);
-    // }, arm));
-
-    // driverController.rightBumper().whileTrue(
-    //   new PIDAngle(
-    //     driveSubsystem, visionSubsystem, RobotContainer::isRed,
-    //     ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD,
-    //     PositionConstants.kSpeakerPosition
-    //   )
-    // );
-    
-    // driverController.rightBumper().whileTrue(Commands.run(new Runnable() {
-    //   @Override
-    //   public void run() {
-    //     Pose2d pose = driveSubsystem.getPose();
-    //     Translation2d speaker = PositionConstants.kSpeakerPosition;
-    //     arm.setScoringSetpoint(
-    //       Math.sqrt(
-    //         Math.pow(
-    //           pose.getX() - speaker.getX(), 2)) +
-    //         Math.pow(
-    //           pose.getY() - speaker.getY(), 2));
-    //   }
-    // }, arm));
-
-    // driverController.leftBumper().onTrue(NamedCommands.getCommand("ArmFloor"));
 
   }
 

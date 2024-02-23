@@ -15,7 +15,7 @@ public class Climb extends SubsystemBase {
     DoubleSolenoid solenoid;
 
     public Climb() {
-        solenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 0, 1);
+        solenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1);
     }
 
     public void set(boolean on) {

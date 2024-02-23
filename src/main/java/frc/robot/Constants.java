@@ -133,9 +133,9 @@ public final class Constants {
     public static final double kV = 1.36;
     public static final double kA = 0.236;
 
-    public static final double kP = 0.45;
+    public static final double kP = 0.65;
 
-    public static final double kAngularP = 0.3; // arbitrary
+    public static final double kAngularP = 0.5; // change this
 
     public static final double kTrackWidth = .95;
   }
