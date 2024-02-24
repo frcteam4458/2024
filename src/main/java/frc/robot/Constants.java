@@ -60,7 +60,7 @@ public final class Constants {
     public static final double kArmP = 0.35;
     public static final double kArmI = 0.0;
     public static final double kArmD = 0.0;
-    public static final double kArmDegPerSec = 100;
+    public static final double kArmDegPerSec = 150;
     public static final double kArmAccel = 150;
 
     public static final boolean kArmPid = true;
