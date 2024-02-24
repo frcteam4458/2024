@@ -13,6 +13,7 @@ import frc.robot.subsystems.VirtualSubsystem;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.REVPhysicsSim;
@@ -25,7 +26,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotInit() {
     if (Robot.isReal()) {
-      // Logger.addDataReceiver(new WPILOGWriter("/media/sda2"));
+      Logger.addDataReceiver(new WPILOGWriter("/media/sda1"));
       Logger.addDataReceiver(new NT4Publisher());
     } else {
       Logger.addDataReceiver(new NT4Publisher());
@@ -39,7 +40,6 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    // SmartDashboard.updateValues();
 
     Logger.recordOutput("Battery Voltage", RobotController.getBatteryVoltage());
     VirtualSubsystem.periodicAll();
@@ -59,8 +59,6 @@ public class Robot extends LoggedRobot {
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
-
-    NamedCommands.getCommand("Intake");
   }
 
   @Override

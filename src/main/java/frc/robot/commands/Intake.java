@@ -20,6 +20,7 @@ public class Intake extends Command {
     boolean setFinalPosition = false;
     double finalPosition = 0.0;
     boolean running = false;
+    boolean movedArm = false;
     
     public Intake(Feeder feeder) {
         this.feeder = feeder;
@@ -32,6 +33,7 @@ public class Intake extends Command {
         detectedTop = false;
         detectedBottom = false;
         setFinalPosition = false;
+        movedArm = false;
         finalPosition = 0.0;
         running = true;
         Logger.recordOutput("Intake/Running", running);
@@ -39,9 +41,6 @@ public class Intake extends Command {
 
     @Override
     public void execute() {
-        // if(feeder.getBottom()) {
-        //     detectedBottom = true;
-        // }
         // if(feeder.getTop() && !detectedBottom) {
         //     detectedTop = true;
         // }

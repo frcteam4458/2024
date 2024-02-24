@@ -11,10 +11,12 @@ import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Voltage;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -73,10 +75,10 @@ public class DriveSubsystem extends SubsystemBase {
     robotPose = getPose();
 
     // Perhaps its a good idea to enable pose estimation from a command rather than statically accessing the vision subsystem
-    if(VisionSubsystem.estimatedPoseBack.isPresent() && Robot.isReal())
+    if(VisionSubsystem.estimatedPoseBack.isPresent() && Robot.isReal() && !DriverStation.isAutonomousEnabled())
       addVisionMeasurement(VisionSubsystem.estimatedPoseBack.get().estimatedPose, VisionSubsystem.estimatedPoseBack.get().timestampSeconds);
 
-    if(VisionSubsystem.estimatedPoseFront.isPresent() && Robot.isReal())
+    if(VisionSubsystem.estimatedPoseFront.isPresent() && Robot.isReal() && !DriverStation.isAutonomousEnabled())
       addVisionMeasurement(VisionSubsystem.estimatedPoseFront.get().estimatedPose, VisionSubsystem.estimatedPoseFront.get().timestampSeconds);
   }
 
@@ -112,6 +114,7 @@ public class DriveSubsystem extends SubsystemBase {
             x * HardwareConstants.kMaxSpeed,
             y * HardwareConstants.kMaxSpeed,
             omega * HardwareConstants.kMaxAngVel,
+            // Rotation2d.fromDegrees(inputs.gyroYaw));
             getPose().getRotation());
     drive(speeds);
   }
@@ -142,6 +145,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   public void setPose(double x, double y, double yaw) {
     setPose(new Pose2d(x, y, new Rotation2d(Math.toRadians(yaw))));
+
   }
 
   public void setPose(Pose2d pose) {
@@ -189,5 +193,9 @@ public class DriveSubsystem extends SubsystemBase {
 
   public void setCoast(boolean coast) {
     io.setCoast(coast);
+  }
+
+  public void resetGyro(Rotation3d rotation) {
+    
   }
 }

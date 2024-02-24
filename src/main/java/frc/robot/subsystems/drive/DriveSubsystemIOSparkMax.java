@@ -123,14 +123,14 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
 
   @Override
   public void drive(ChassisSpeeds speeds) {
-    swerveDrive.chassisVelocityCorrection = true;
+    swerveDrive.chassisVelocityCorrection = false;
     swerveDrive.setHeadingCorrection(true);
     swerveDrive.drive(speeds);
   }
 
   @Override
   public void driveFieldOriented(ChassisSpeeds speeds) {
-    swerveDrive.chassisVelocityCorrection = true;
+    swerveDrive.chassisVelocityCorrection = false;
     swerveDrive.setHeadingCorrection(true);
     swerveDrive.setChassisSpeeds(speeds);
   }
@@ -161,8 +161,8 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
   public void addVisionMeasurement(Pose3d pose, double timestamp) {
     var gyroOffset = swerveDrive.getGyroRotation3d();
     swerveDrive.addVisionMeasurement(pose.toPose2d(), timestamp);
-    swerveDrive.setGyroOffset(gyroOffset);
-    swerveDrive.setGyroOffset(new Rotation3d(0, 0, swerveDrive.getYaw().getRadians()));
+    // swerveDrive.setGyroOffset(gyroOffset);
+    // swerveDrive.setGyroOffset(new Rotation3d(0, 0, swerveDrive.getYaw().getRadians()));
     Logger.recordOutput("Photon Pose", pose.toPose2d());
   }
   /**
@@ -193,6 +193,11 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
       getMotor(i, 0).setIdleMode(idleMode);
       getMotor(i, 1).setIdleMode(idleMode);
     }
+  }
+
+  @Override
+  public void resetGyro(Rotation3d rotation) {
+    swerveDrive.setGyro(rotation);
   }
 
 }

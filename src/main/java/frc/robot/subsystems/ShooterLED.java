@@ -15,6 +15,8 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
+import frc.robot.RobotContainer;
+
 import java.util.List;
 
 public class ShooterLED extends VirtualSubsystem {
@@ -222,7 +224,7 @@ public class ShooterLED extends VirtualSubsystem {
     } else if (fallen) {
       strobe(Section.FULL, Color.kWhite, strobeFastDuration);
     } else if (DriverStation.isAutonomous()) {
-      wave(Section.FULL, Color.kGold, Color.kDarkBlue, waveFastCycleLength, waveFastDuration);
+      wave(Section.FULL, Color.kWhite, RobotContainer.isBlue() ? Color.kBlue : Color.kRed, waveFastCycleLength, waveFastDuration);
       if (autoFinished) {
         double fullTime = (double) length / waveFastCycleLength * waveFastDuration;
         solid((Timer.getFPGATimestamp() - autoFinishedTime) / fullTime, Color.kGreen);
@@ -240,7 +242,7 @@ public class ShooterLED extends VirtualSubsystem {
           hpColor = null;
           break;
         case CUBE:
-          hpColor = Color.kPurple;
+          hpColor = Color.kRed;
           break;
         case CONE:
           if (hpConeTipped) {
@@ -269,7 +271,7 @@ public class ShooterLED extends VirtualSubsystem {
       } else if (gripperStopped) {
         solid(Section.SHOULDER, Color.kGreen);
       } else if (intakeReady) {
-        solid(Section.SHOULDER, Color.kPurple);
+        // solid(Section.SHOULDER, Color.kPurple);
       } else if (autoSubstation) {
         rainbow(Section.SHOULDER, rainbowCycleLength, rainbowDuration);
       }
