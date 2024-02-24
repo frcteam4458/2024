@@ -2,6 +2,7 @@ package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import org.littletonrobotics.junction.AutoLog;
 
@@ -77,4 +78,6 @@ public interface DriveSubsystemIO {
 
   public default void setVolts(double left, double right) {}
   public default void setCoast(boolean coast) {}
+
+  public default void resetGyro(Rotation3d rotation) {}
 }

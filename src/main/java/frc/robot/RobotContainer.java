@@ -139,11 +139,8 @@ public class RobotContainer {
       "OTF",
       "2 Note Top",
       "Right 3 Note",
-
-      "Quasistatic Forward",
-      "Quasistatic Backward",
-      "Dynamic Forward",
-      "Dynamic Backward",
+      "4",
+      "Straight Line"
     };
 
     autoChooser.setDefaultOption("Nothing", "Nothing");
@@ -163,7 +160,6 @@ public class RobotContainer {
     SmartDashboard.putNumber("Flywheel RPM", 0);
     SmartDashboard.putNumber("Arm Angle", 0);
     ShooterLED.getInstance().intakeReady = true;
-
   }
 
 
@@ -183,13 +179,21 @@ public class RobotContainer {
 
     yawCommand = new AlignCommand(driveSubsystem, visionSubsystem, RobotContainer::isRed, ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD);
 
-    Commands.run(() -> {
-      if(DriverStation.isEnabled()) return;
+    // Commands.run(() -> {
+    //   if(DriverStation.isEnabled()) return;
+      
+    // }).ignoringDisable(true).schedule();
+    driveSubsystem.setDefaultCommand(teleopCommand);
+
+    new Trigger(() -> {return dio.get();}).onTrue(Commands.runOnce(() -> {
       driveSubsystem.setCoast(!dio.get());
       arm.setCoast(!dio.get());
       feeder.setCoast(!dio.get());
-    }).ignoringDisable(true).schedule();
-    driveSubsystem.setDefaultCommand(teleopCommand);
+    }).ignoringDisable(true)).onFalse(Commands.runOnce(() -> {
+      driveSubsystem.setCoast(!dio.get());
+      arm.setCoast(!dio.get());
+      feeder.setCoast(!dio.get());
+    }).ignoringDisable(true));
 
     configureDriveSetpoints();
     configureArmJoystick();
@@ -206,7 +210,14 @@ public class RobotContainer {
       new InstantCommand(() -> {
         arm.setSetpoint(0);
       })).withInterruptBehavior(InterruptionBehavior.kCancelSelf).asProxy().andThen(Commands.sequence(
-      new Intake(feeder).asProxy(),
+      Commands.parallel(
+        new Intake(feeder).asProxy(),
+        Commands.run(() -> {
+          if(feeder.getBottom()) {
+            arm.setSetpoint(10);
+          }
+        }).until(() -> { return feeder.getBottom(); })
+      ),
       Commands.runOnce(() -> {
         arm.setSetpoint(10);
       }),
@@ -232,21 +243,12 @@ public class RobotContainer {
               flywheel.setRPM(1000);
               return;
             }
+            
             Translation2d speaker = PositionConstants.kSpeakerPosition.plus(new Translation2d(0.5, 0));
             Translation2d robot = driveSubsystem.getPose().getTranslation();
             if(isRed()) speaker = GeometryUtil.flipFieldPosition(speaker);
             double dist = robot.getDistance(speaker);
             Logger.recordOutput("AimCommand/dist", dist);
-
-            // boolean zone2500 = debounce2500.calculate(dist < 1.8);
-            // boolean zone3500 = debounce3500.calculate(1.8 < dist && dist < 2.4);
-            // boolean zone4000 = debounce4000.calculate(2.4 < dist);
-
-            // Logger.recordOutput("AimCommand/Zone2500", zone2500);
-            // Logger.recordOutput("AimCommand/Zone3500", zone3500);
-            // Logger.recordOutput("AimCommand/Zone4000", zone4000);
-            // flywheel.setRPM(SmartDashboard.getNumber("Flywheel RPM", 0.0));
-            // arm.setSetpoint(SmartDashboard.getNumber("Arm Angle", 0.0));
 
             flywheel.setRPM(Interpolation.getRPM(dist));
             arm.setSetpoint(Interpolation.getAngle(dist));
@@ -355,6 +357,7 @@ public class RobotContainer {
       arm.setSpeakerMode(true);
       SmartDashboard.putBoolean("Speaker", true);
       SmartDashboard.putBoolean("Amp", false);
+      if(aimCommand.isScheduled()) aimCommand.cancel();
     }));
 
     operatorJoystick.pov(180).onTrue(Commands.runOnce(() -> {
@@ -362,6 +365,7 @@ public class RobotContainer {
       SmartDashboard.putBoolean("Speaker", false);
       SmartDashboard.putBoolean("Amp", true);
       arm.setSetpoint(45);
+      if(aimCommand.isScheduled()) aimCommand.cancel();
     }));
 
     // commandGeneric.button(12).whileTrue(NamedCommands.getCommand("SpeakerAlign"));
