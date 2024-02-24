@@ -173,6 +173,10 @@ public class RobotContainer {
       }
     }));
 
+    commandGeneric.button(17).onTrue(Commands.runOnce(() -> {
+      driveSubsystem.resetGyroOffset();
+    }));
+
     SmartDashboard.putData("Nuclear Button", Commands.runOnce(() -> {
       CommandScheduler.getInstance().cancelAll();
     }));

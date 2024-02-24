@@ -40,6 +40,8 @@ public class DriveSubsystem extends SubsystemBase {
 
   public static Pose2d robotPose = new Pose2d();
 
+  double offset = 0;
+
   public DriveSubsystem(DriveSubsystemIO io) {
     this.io = io;
     field = new Field2d();
@@ -115,7 +117,7 @@ public class DriveSubsystem extends SubsystemBase {
             y * HardwareConstants.kMaxSpeed,
             omega * HardwareConstants.kMaxAngVel,
             // Rotation2d.fromDegrees(inputs.gyroYaw));
-            getPose().getRotation());
+            Rotation2d.fromDegrees(inputs.gyroYaw - offset));
     drive(speeds);
   }
 
@@ -195,7 +197,8 @@ public class DriveSubsystem extends SubsystemBase {
     io.setCoast(coast);
   }
 
-  public void resetGyro(Rotation3d rotation) {
-    
+  // Sets effective gyro to 0 if blue, 180 if red
+  public void resetGyroOffset() {
+    this.offset = inputs.gyroYaw + (RobotContainer.isRed() ? 180 : 0);
   }
 }
