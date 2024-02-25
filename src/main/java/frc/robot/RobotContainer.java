@@ -169,11 +169,15 @@ public class RobotContainer {
       return DriverStation.isEnabled();
     }).onTrue(Commands.runOnce(() -> {
       if(DriverStation.isAutonomous()) {
-        arm.setSetpoint(0);
+        arm.setSetpoint(20);
       }
     }));
 
-    commandGeneric.button(17).onTrue(Commands.runOnce(() -> {
+    Commands.run(() -> {
+      SmartDashboard.putString("Time Remaining", DriverStation.isAutonomous() ? "Autonomous: " : "Teleoperated: " + DriverStation.getMatchTime());
+    }).ignoringDisable(true).schedule();
+
+    commandGeneric.button(9).onTrue(Commands.runOnce(() -> {
       driveSubsystem.resetGyroOffset();
     }));
 
@@ -212,8 +216,12 @@ public class RobotContainer {
 
     intakeCommandGroup = Commands.sequence(
       new InstantCommand(() -> {
+        if(aimCommand.isScheduled()) aimCommand.cancel();
+        if(shootCommand.isScheduled()) shootCommand.cancel();
+        if(aimShootIntakeCommand.isScheduled()) aimShootIntakeCommand.cancel();
+        if(aimShootCommand.isScheduled()) aimShootCommand.cancel();
         arm.setSetpoint(0);
-      })).withInterruptBehavior(InterruptionBehavior.kCancelSelf).asProxy().andThen(Commands.sequence(
+      }).asProxy()).asProxy().andThen(Commands.sequence(
       Commands.parallel(
         new Intake(feeder).asProxy(),
         Commands.run(() -> {
@@ -229,7 +237,7 @@ public class RobotContainer {
       new InstantCommand(() -> {
         feeder.setSetpoint(feeder.getPosition() + 0.75);
       }, feeder).asProxy()
-    )).withInterruptBehavior(InterruptionBehavior.kCancelSelf).asProxy().finallyDo((boolean interrupted) -> {
+    ).asProxy()).withInterruptBehavior(InterruptionBehavior.kCancelSelf).asProxy().finallyDo((boolean interrupted) -> {
       if(interrupted) {
         feeder.set(0);
         System.out.println("Feed interrupted!!");
@@ -240,6 +248,9 @@ public class RobotContainer {
     aimCommand = new ProxyCommand(Commands.parallel(
         Commands.runOnce(() -> {
           Logger.recordOutput("AimCommand/Running", true);
+          driveSubsystem.setVisionOverride(true);
+          if(intakeCommand.isScheduled()) intakeCommand.cancel();
+          if(intakeCommandGroup.isScheduled()) intakeCommandGroup.cancel();
         }),
         Commands.sequence(Commands.run(() -> {
             if(!arm.getSpeakerMode()) {
@@ -260,6 +271,8 @@ public class RobotContainer {
         )
     ).finallyDo((boolean interrupted) -> {
       Logger.recordOutput("AimCommand/Running", false);
+
+      driveSubsystem.setVisionOverride(false);
       
       if(interrupted) {
         feeder.set(0);
@@ -272,6 +285,7 @@ public class RobotContainer {
         Commands.runOnce(() -> {
           Logger.recordOutput("ShootCommand/Running", true);
           if(!aimCommand.isScheduled()) aimCommand.schedule();
+          if(intakeCommandGroup.isScheduled()) intakeCommand.cancel();
           if(intakeCommand.isScheduled()) {
             intakeCommand.cancel();
             feeder.set(0);

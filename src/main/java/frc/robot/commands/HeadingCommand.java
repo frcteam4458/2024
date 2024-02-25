@@ -43,8 +43,8 @@ public class HeadingCommand extends TeleopCommand {
     @Override
     public double getOmega() {
         double output = pidController.calculate(driveSubsystem.getPose().getRotation().getRadians());
-        // if(output < -0.25) output = -0.25;
-        // if(0.25 < output) output = 0.25;
+        if(output < -0.25) output = -0.25;
+        if(0.25 < output) output = 0.25;
         Logger.recordOutput("HeadingCommand/Setpoint", pidController.getSetpoint());
         Logger.recordOutput("HeadingCommand/Position", driveSubsystem.getPose().getRotation().getRadians());
         Logger.recordOutput("HeadingCommand/Output", output);

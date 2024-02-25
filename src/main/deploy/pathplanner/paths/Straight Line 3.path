@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.9,
-        "y": 7.19
+        "x": 7.85101693718827,
+        "y": 7.760807540617457
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.068672500981365,
-        "y": 6.670053340106681
+        "x": 6.135059491021596,
+        "y": 7.47806455232863
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Amp Side 2"
     },
     {
       "anchor": {
-        "x": 2.9078895212422267,
-        "y": 7.058824949003817
+        "x": 2.839641213724234,
+        "y": 7.380566970160069
       },
       "prevControl": {
-        "x": 5.1544553998198905,
-        "y": 6.539450897083612
+        "x": 3.288130091699615,
+        "y": 7.448815277678062
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,8 +45,8 @@
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": -0.08150389654542474,
-    "velocity": 0
+    "rotation": 0.0,
+    "velocity": 1.0
   },
   "useDefaultConstraints": false
 }

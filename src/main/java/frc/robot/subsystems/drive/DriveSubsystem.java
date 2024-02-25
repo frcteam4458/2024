@@ -42,6 +42,8 @@ public class DriveSubsystem extends SubsystemBase {
 
   double offset = 0;
 
+  boolean visionOverride = false;
+
   public DriveSubsystem(DriveSubsystemIO io) {
     this.io = io;
     field = new Field2d();
@@ -77,10 +79,10 @@ public class DriveSubsystem extends SubsystemBase {
     robotPose = getPose();
 
     // Perhaps its a good idea to enable pose estimation from a command rather than statically accessing the vision subsystem
-    if(VisionSubsystem.estimatedPoseBack.isPresent() && Robot.isReal() && !DriverStation.isAutonomousEnabled())
+    if((VisionSubsystem.estimatedPoseBack.isPresent() && Robot.isReal() && (visionOverride || !DriverStation.isAutonomousEnabled())))
       addVisionMeasurement(VisionSubsystem.estimatedPoseBack.get().estimatedPose, VisionSubsystem.estimatedPoseBack.get().timestampSeconds);
 
-    if(VisionSubsystem.estimatedPoseFront.isPresent() && Robot.isReal() && !DriverStation.isAutonomousEnabled())
+    if((VisionSubsystem.estimatedPoseFront.isPresent() && Robot.isReal() && (visionOverride || !DriverStation.isAutonomousEnabled())))
       addVisionMeasurement(VisionSubsystem.estimatedPoseFront.get().estimatedPose, VisionSubsystem.estimatedPoseFront.get().timestampSeconds);
   }
 
@@ -200,5 +202,9 @@ public class DriveSubsystem extends SubsystemBase {
   // Sets effective gyro to 0 if blue, 180 if red
   public void resetGyroOffset() {
     this.offset = inputs.gyroYaw + (RobotContainer.isRed() ? 180 : 0);
+  }
+
+  public void setVisionOverride(boolean override) {
+    this.visionOverride = override;
   }
 }
