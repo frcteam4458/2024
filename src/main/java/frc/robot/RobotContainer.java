@@ -8,9 +8,7 @@ import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
 import org.littletonrobotics.junction.Logger;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.util.GeometryUtil;
@@ -43,16 +41,13 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.ControlConstants;
 import frc.robot.Constants.PositionConstants;
 import frc.robot.commands.ArmSetpoint;
-import frc.robot.commands.FlywheelCommand;
 import frc.robot.commands.HeadingCommand;
 import frc.robot.commands.Intake;
 import frc.robot.commands.TeleopCommand;
 import frc.robot.commands.auto.AlignCommand;
 import frc.robot.commands.auto.Autos;
 import frc.robot.commands.auto.PIDAlign;
-import frc.robot.commands.auto.SpeakerAlignCommand;
 import frc.robot.subsystems.ShooterLED;
-import frc.robot.subsystems.VirtualSubsystem;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIOSim;
 import frc.robot.subsystems.arm.ArmIOSparkMax;
@@ -75,12 +70,7 @@ public class RobotContainer {
   private final CommandGenericHID commandGeneric = new CommandGenericHID(0);
 
   private final DigitalInput dio;
-
-  private final Debouncer debounce2500;
-  private final Debouncer debounce3000;
-  private final Debouncer debounce3500;
-  private final Debouncer debounce4000;
-
+  
   private DriveSubsystem driveSubsystem;
   private Arm arm;
   private Flywheel flywheel;
@@ -109,10 +99,6 @@ public class RobotContainer {
   private SendableChooser<String> autoChooser = new SendableChooser<String>();
 
   public RobotContainer() {
-    debounce2500 = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
-    debounce3000 = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
-    debounce3500 = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
-    debounce4000 = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
 
     driveSubsystem = new DriveSubsystem(new DriveSubsystemIOSparkMax());
     if(Robot.isReal()) {
@@ -159,7 +145,8 @@ public class RobotContainer {
 
     SmartDashboard.putNumber("Flywheel RPM", 0);
     SmartDashboard.putNumber("Arm Angle", 0);
-    ShooterLED.getInstance().intakeReady = true;
+    
+    ShooterLED.getInstance();
   }
 
 
@@ -197,10 +184,12 @@ public class RobotContainer {
       driveSubsystem.setCoast(!dio.get());
       arm.setCoast(!dio.get());
       feeder.setCoast(!dio.get());
+      ShooterLED.getInstance().coastbutton = false;
     }).ignoringDisable(true)).onFalse(Commands.runOnce(() -> {
       driveSubsystem.setCoast(!dio.get());
       arm.setCoast(!dio.get());
       feeder.setCoast(!dio.get());
+      ShooterLED.getInstance().coastbutton = false;
     }).ignoringDisable(true));
 
     configureDriveSetpoints();
@@ -212,10 +201,13 @@ public class RobotContainer {
 
     operatorJoystick.button(XboxController.Button.kRightBumper.value).onTrue(new InstantCommand(() -> {
       climb.set(true);
+      ShooterLED.getInstance().pistonClimb = true;
     }, climb));
 
     intakeCommandGroup = Commands.sequence(
       new InstantCommand(() -> {
+        ShooterLED.getInstance().intakeReady = true;
+        ShooterLED.getInstance().pistonClimb = false;
         if(aimCommand.isScheduled()) aimCommand.cancel();
         if(shootCommand.isScheduled()) shootCommand.cancel();
         if(aimShootIntakeCommand.isScheduled()) aimShootIntakeCommand.cancel();
@@ -228,7 +220,7 @@ public class RobotContainer {
           if(feeder.getBottom()) {
             arm.setSetpoint(10);
           }
-        }).until(() -> { return feeder.getBottom(); })
+        }).until(() -> { return feeder.getBottom() || feeder.getTop(); })
       ),
       Commands.runOnce(() -> {
         arm.setSetpoint(10);
@@ -238,15 +230,21 @@ public class RobotContainer {
         feeder.setSetpoint(feeder.getPosition() + 0.75);
       }, feeder).asProxy()
     ).asProxy()).withInterruptBehavior(InterruptionBehavior.kCancelSelf).asProxy().finallyDo((boolean interrupted) -> {
+      ShooterLED.getInstance().intakeReady = false;
+      ShooterLED.getInstance().noteAcquired = true;
       if(interrupted) {
         feeder.set(0);
         System.out.println("Feed interrupted!!");
       }
     });
+
     NamedCommands.registerCommand("Intake", intakeCommandGroup);
 
     aimCommand = new ProxyCommand(Commands.parallel(
         Commands.runOnce(() -> {
+          ShooterLED.getInstance().noteAcquired = false;
+          ShooterLED.getInstance().pistonClimb = false;
+          ShooterLED.getInstance().aim = true;
           Logger.recordOutput("AimCommand/Running", true);
           driveSubsystem.setVisionOverride(true);
           if(intakeCommand.isScheduled()) intakeCommand.cancel();
@@ -273,6 +271,8 @@ public class RobotContainer {
       Logger.recordOutput("AimCommand/Running", false);
 
       driveSubsystem.setVisionOverride(false);
+
+      ShooterLED.getInstance().aim = false;
       
       if(interrupted) {
         feeder.set(0);
@@ -284,12 +284,14 @@ public class RobotContainer {
     shootCommand = Commands.sequence(
         Commands.runOnce(() -> {
           Logger.recordOutput("ShootCommand/Running", true);
+          ShooterLED.getInstance().shoot = true;
           if(!aimCommand.isScheduled()) aimCommand.schedule();
           if(intakeCommandGroup.isScheduled()) intakeCommand.cancel();
           if(intakeCommand.isScheduled()) {
             intakeCommand.cancel();
             feeder.set(0);
           }
+          ShooterLED.getInstance().pistonClimb = false;
         }),
         Commands.waitSeconds(0.2),
         Commands.waitUntil(() -> {
@@ -308,6 +310,7 @@ public class RobotContainer {
           if(yawCommand.isScheduled()) yawCommand.cancel();
           feeder.set(0);
           Logger.recordOutput("ShootCommand/Running", false);
+          ShooterLED.getInstance().shoot = false;
           if(interrupted) System.out.println("Shoot interrupted!!");
         });
 

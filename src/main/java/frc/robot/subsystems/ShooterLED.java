@@ -32,24 +32,17 @@ public class ShooterLED extends VirtualSubsystem {
 
   // Robot state tracking
   public int loopCycleCount = 0;
-  public HPGamePiece hpGamePiece = HPGamePiece.NONE;
-  public boolean hpConeTipped = false;
-  public boolean hpDoubleSubstation = false;
-  public boolean hpThrowGamePiece = false;
-  public boolean gripperStopped = false;
+  public boolean coastbutton = false;
   public boolean intakeReady = false;
-  public boolean autoScore = false;
-  public boolean autoSubstation = false;
-  public boolean distraction = false;
-  public boolean fallen = false;
+  public boolean noteAcquired = false;
+  public boolean yawLock = false;
+  public boolean aim = false;
+  public boolean shoot = false;
+  public boolean armDown = false;
   public boolean endgameAlert = false;
-  public boolean sameBattery = false;
-  public boolean armCoast = false;
-  public boolean armEstopped = false;
+  public boolean pistonClimb = false;
   public boolean autoFinished = false;
   public double autoFinishedTime = 0.0;
-  public boolean lowBatteryAlert = false;
-  public boolean demoMode = false;
 
   private Alliance alliance = Alliance.Blue;
   private boolean lastEnabledAuto = false;
@@ -62,12 +55,8 @@ public class ShooterLED extends VirtualSubsystem {
   private final Notifier loadingNotifier;
 
   // Constants
-  private static final boolean prideLeds = false;
   private static final int minLoopCycleCount = 10;
   private static final int length = 37;
-  private static final int underglowLen = 30;
-  private static final int staticLength = 5;
-  private static final int staticSectionLength = 3;
   private static final double strobeFastDuration = 0.1;
   private static final double strobeSlowDuration = 0.2;
   private static final double breathDuration = 1.0;
@@ -86,22 +75,6 @@ public class ShooterLED extends VirtualSubsystem {
   private ShooterLED() {
     System.out.println("[Init] Creating LEDs");
     leds = new AddressableLED(0);
-    // under = new AddressableLED(1);
-    // Alliance alliance = Alliance.Blue;
-    // if(DriverStation.getAlliance().isPresent()) {
-    //   alliance = DriverStation.getAlliance().get();
-    // }
-    // AddressableLEDBuffer underglowBuffer = new AddressableLEDBuffer(underglowLen);
-    // if(alliance == Alliance.Blue) {
-    //   for(int i = 0; i < underglowLen; i++) {
-    //     underglowBuffer.setRGB(i, 0, 0, 128);
-    //   }
-    // } else {
-    //   for(int i = 0; i < underglowLen; i++) {
-    //     underglowBuffer.setRGB(i, 128, 0, 0);
-    //   }
-    // }
-    // under.setData(underglowBuffer);
     buffer = new AddressableLEDBuffer(length);
     leds.setLength(length);
     leds.setData(buffer);
@@ -111,7 +84,7 @@ public class ShooterLED extends VirtualSubsystem {
             () -> {
               synchronized (this) {
                 breath(
-                    Section.STATIC_LOW,
+                    Section.FULL,
                     Color.kWhite,
                     Color.kBlack,
                     0.25,
@@ -124,11 +97,9 @@ public class ShooterLED extends VirtualSubsystem {
 
   public synchronized void periodic() {
     // Update alliance color
-    if (DriverStation.isFMSAttached()) {
-      if(DriverStation.getAlliance().isPresent())
-      alliance = DriverStation.getAlliance().get();
-    }
-
+    if(DriverStation.getAlliance().isPresent())
+     alliance = DriverStation.getAlliance().get();
+    
     // Update auto state
     if (DriverStation.isDisabled()) {
       autoFinished = false;
@@ -159,44 +130,6 @@ public class ShooterLED extends VirtualSubsystem {
       if (lastEnabledAuto && Timer.getFPGATimestamp() - lastEnabledTime < autoFadeMaxTime) {
         // Auto fade
         solid(1.0 - ((Timer.getFPGATimestamp() - lastEnabledTime) / autoFadeTime), Color.kGreen);
-
-      } else if (lowBatteryAlert) {
-        // Low battery
-        solid(Section.FULL, Color.kOrangeRed);
-
-      } else if (prideLeds) {
-        // Pride stripes
-        stripes(
-            Section.FULL,
-            List.of(
-                Color.kBlack,
-                Color.kRed,
-                Color.kOrangeRed,
-                Color.kYellow,
-                Color.kGreen,
-                Color.kBlue,
-                Color.kPurple,
-                Color.kBlack,
-                new Color(0.15, 0.3, 1.0),
-                Color.kDeepPink,
-                Color.kWhite,
-                Color.kDeepPink,
-                new Color(0.15, 0.3, 1.0)),
-            3,
-            5.0);
-        switch (alliance) {
-          case Red:
-            solid(Section.STATIC_LOW, Color.kRed);
-            buffer.setLED(staticSectionLength, Color.kBlack);
-            break;
-          case Blue:
-            solid(Section.STATIC_LOW, Color.kBlue);
-            buffer.setLED(staticSectionLength, Color.kBlack);
-            break;
-          default:
-            break;
-        }
-
       } else {
         // Default pattern
         switch (alliance) {
@@ -221,81 +154,67 @@ public class ShooterLED extends VirtualSubsystem {
             break;
         }
       }
-    } else if (fallen) {
-      strobe(Section.FULL, Color.kWhite, strobeFastDuration);
-    } else if (DriverStation.isAutonomous()) {
-      wave(Section.FULL, Color.kWhite, RobotContainer.isBlue() ? Color.kBlue : Color.kRed, waveFastCycleLength, waveFastDuration);
-      if (autoFinished) {
-        double fullTime = (double) length / waveFastCycleLength * waveFastDuration;
-        solid((Timer.getFPGATimestamp() - autoFinishedTime) / fullTime, Color.kGreen);
-      }
-    } else {
-      // Demo mode background
-      if (demoMode) {
-        wave(Section.FULL, Color.kGold, Color.kDarkBlue, waveSlowCycleLength, waveSlowDuration);
-      }
+     } else if (DriverStation.isAutonomous()) {
+        // wave(Section.FULL, Color.kWhite, RobotContainer.isBlue() ? Color.kBlue : Color.kRed, waveFastCycleLength, waveFastDuration);
+        // if (autoFinished) {
+        //   double fullTime = (double) length / waveFastCycleLength * waveFastDuration;
+        //   solid((Timer.getFPGATimestamp() - autoFinishedTime) / fullTime, Color.kGreen);
+        // }
 
-      // Set HP indicator
-      Color hpColor = null;
-      switch (hpGamePiece) {
-        case NONE:
-          hpColor = null;
-          break;
-        case CUBE:
-          hpColor = Color.kRed;
-          break;
-        case CONE:
-          if (hpConeTipped) {
-            hpColor = Color.kRed;
-          } else {
-            hpColor = Color.kGold;
-          }
-          break;
-      }
-      if (hpDoubleSubstation) {
-        solid(Section.STATIC_LOW, hpColor);
-        solid(Section.STATIC_HIGH, hpColor);
-      } else if (hpThrowGamePiece) {
-        strobe(Section.STATIC, hpColor, strobeSlowDuration);
-      } else {
-        solid(Section.STATIC, hpColor);
-      }
+        switch (alliance) {
+          case Red:
+            wave(
+                Section.FULL,
+                Color.kRed,
+                Color.kBlack,
+                waveAllianceCycleLength,
+                waveAllianceDuration);
+            break;
+          case Blue:
+            wave(
+                Section.FULL,
+                Color.kBlue,
+                Color.kBlack,
+                waveAllianceCycleLength,
+                waveAllianceDuration);
+            break;
+          default:
+            wave(Section.FULL, Color.kGold, Color.kDarkBlue, waveSlowCycleLength, waveSlowDuration);
+            break;
+        }
+    }
 
-      // Set special modes
-      if (distraction) {
-        strobe(Section.SHOULDER, Color.kWhite, strobeFastDuration);
-      } else if (endgameAlert) {
-        strobe(Section.SHOULDER, Color.kBlue, strobeSlowDuration);
-      } else if (autoScore) {
-        rainbow(Section.SHOULDER, rainbowCycleLength, rainbowDuration);
-      } else if (gripperStopped) {
-        solid(Section.SHOULDER, Color.kGreen);
+    if(DriverStation.isTeleop()) {
+      if (pistonClimb) {
+        rainbow(Section.FULL, rainbowCycleLength, rainbowDuration);
       } else if (intakeReady) {
-        // solid(Section.SHOULDER, Color.kPurple);
-      } else if (autoSubstation) {
-        rainbow(Section.SHOULDER, rainbowCycleLength, rainbowDuration);
+        strobe(Section.FULL, alliance == Alliance.Blue ? Color.kDarkBlue : Color.kFirstRed, strobeSlowDuration);
+      } else if (shoot) {
+        rainbow(Section.FULL, rainbowCycleLength, rainbowDuration);
+      } else if (yawLock) {
+        solid(Section.FULL, Color.kPurple);
+      } else if (aim) {
+        solid(Section.FULL, Color.kGreen);
+      } else if (noteAcquired) {
+        strobe(Section.FULL, Color.kWhite, strobeFastDuration);
       }
     }
 
     // Arm coast alert
-    if (armCoast) {
-      solid(Section.STATIC, Color.kWhite);
+    if (coastbutton) {
+      solid(Section.FULL, Color.kWhite);
     }
 
     // Arm estop alert
-    if (armEstopped) {
-      strobe(Section.SHOULDER, Color.kRed, strobeFastDuration);
-    }
-
-    // Same battery alert
-    if (sameBattery) {
-      breath(Section.STATIC_LOW, Color.kRed, Color.kBlack, breathDuration);
+    if (estopped) {
+      strobe(Section.FULL, Color.kRed, strobeFastDuration);
     }
 
     // Update LEDs
     leds.setData(buffer);
   }
 
+  // SOLID
   private void solid(Section section, Color color) {
     if (color != null) {
       for (int i = section.start(); i < section.end(); i++) {
@@ -303,21 +222,21 @@ public class ShooterLED extends VirtualSubsystem {
       }
     }
   }
-
+// SOLID
   private void solid(double percent, Color color) {
     for (int i = 0; i < MathUtil.clamp(length * percent, 0, length); i++) {
       buffer.setLED(i, color);
     }
   }
-
+// STROBE
   private void strobe(Section section, Color color, double duration) {
     boolean on = ((Timer.getFPGATimestamp() % duration) / duration) > 0.5;
     solid(section, on ? color : Color.kBlack);
   }
 
-  private void breath(Section section, Color c1, Color c2, double duration) {
-    breath(section, c1, c2, duration, Timer.getFPGATimestamp());
-  }
+  // private void breath(Section section, Color c1, Color c2, double duration) {
+  //   breath(section, c1, c2, duration, Timer.getFPGATimestamp());
+  // }
 
   private void breath(Section section, Color c1, Color c2, double duration, double timestamp) {
     double x = ((timestamp % breathDuration) / breathDuration) * 2.0 * Math.PI;
@@ -361,66 +280,28 @@ public class ShooterLED extends VirtualSubsystem {
     }
   }
 
-  private void stripes(Section section, List<Color> colors, int length, double duration) {
-    int offset = (int) (Timer.getFPGATimestamp() % duration / duration * length * colors.size());
-    for (int i = section.start(); i < section.end(); i++) {
-      int colorIndex =
-          (int) (Math.floor((double) (i - offset) / length) + colors.size()) % colors.size();
-      colorIndex = colors.size() - 1 - colorIndex;
-      buffer.setLED(i, colors.get(colorIndex));
-    }
-  }
-
-  public static enum HPGamePiece {
-    NONE,
-    CUBE,
-    CONE
-  }
+  // private void stripes(Section section, List<Color> colors, int length, double duration) {
+  //   int offset = (int) (Timer.getFPGATimestamp() % duration / duration * length * colors.size());
+  //   for (int i = section.start(); i < section.end(); i++) {
+  //     int colorIndex =
+  //         (int) (Math.floor((double) (i - offset) / length) + colors.size()) % colors.size();
+  //     colorIndex = colors.size() - 1 - colorIndex;
+  //     buffer.setLED(i, colors.get(colorIndex));
+  //   }
+  // }
 
   private static enum Section {
-    STATIC,
-    SHOULDER,
-    FULL,
-    STATIC_LOW,
-    STATIC_MID,
-    STATIC_HIGH;
+    FULL;
 
     private int start() {
       switch (this) {
-        case STATIC:
-          return 0;
-        case SHOULDER:
-          return staticLength;
-        case FULL:
-          return 0;
-        case STATIC_LOW:
-          return 0;
-        case STATIC_MID:
-          return staticSectionLength;
-        case STATIC_HIGH:
-          return staticLength - staticSectionLength;
         default:
           return 0;
       }
     }
 
     private int end() {
-      switch (this) {
-        case STATIC:
-          return staticLength;
-        case SHOULDER:
-          return length;
-        case FULL:
-          return length;
-        case STATIC_LOW:
-          return staticSectionLength;
-        case STATIC_MID:
-          return staticLength - staticSectionLength;
-        case STATIC_HIGH:
-          return staticLength;
-        default:
-          return length;
-      }
+      return length;
+    }
     }
   }
-}

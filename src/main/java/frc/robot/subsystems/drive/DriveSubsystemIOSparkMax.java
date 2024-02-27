@@ -7,7 +7,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.Constants.HardwareConstants;
@@ -19,7 +18,6 @@ import org.littletonrobotics.junction.Logger;
 
 import swervelib.SwerveDrive;
 import swervelib.parser.SwerveParser;
-import swervelib.telemetry.SwerveDriveTelemetry;
 
 public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
   SwerveDrive swerveDrive;
@@ -159,7 +157,7 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
    */
   @Override
   public void addVisionMeasurement(Pose3d pose, double timestamp) {
-    var gyroOffset = swerveDrive.getGyroRotation3d();
+    // var gyroOffset = swerveDrive.getGyroRotation3d();
     swerveDrive.addVisionMeasurement(pose.toPose2d(), timestamp);
     // swerveDrive.setGyroOffset(gyroOffset);
     // swerveDrive.setGyroOffset(new Rotation3d(0, 0, swerveDrive.getYaw().getRadians()));
