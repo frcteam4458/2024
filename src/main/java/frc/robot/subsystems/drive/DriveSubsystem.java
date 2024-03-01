@@ -108,10 +108,10 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void arcadeDriveFieldOriented(double x, double y, double omega) {
-    if(RobotContainer.isRed()) {
-      x = -x;
-      y = -y;
-    }
+    // if(RobotContainer.isRed()) {
+    //   x = -x;
+    //   y = -y;
+    // }
     var speeds =
         ChassisSpeeds.fromFieldRelativeSpeeds(
             x * HardwareConstants.kMaxSpeed,
@@ -200,7 +200,12 @@ public class DriveSubsystem extends SubsystemBase {
 
   // Sets effective gyro to 0 if blue, 180 if red
   public void resetGyroOffset() {
-    this.offset = inputs.gyroYaw + (RobotContainer.isRed() ? 180 : 0);
+    // this.offset = inputs.gyroYaw + (RobotContainer.isRed() ? 180 : 0);
+    this.offset = inputs.gyroYaw;
+  }
+
+  public void addGyroOffset() {
+    this.offset += 180;
   }
 
   public void setVisionOverride(boolean override) {

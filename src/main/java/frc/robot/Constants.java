@@ -46,6 +46,10 @@ public final class Constants {
 
     public static final double kSpeakerAngle = 30.0;
     public static final double kShootVelocity = 5000.0;
+
+    public static final Pose2d kAmpTrap = new Pose2d(0, 1, new Rotation2d());
+    public static final Pose2d kSourceTrap = new Pose2d(0, 5, new Rotation2d());
+    public static final Pose2d kCenterTrap = new Pose2d(0, 9, new Rotation2d());
   }
 
   public static class ControlConstants {

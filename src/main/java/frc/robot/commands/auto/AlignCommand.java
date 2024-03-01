@@ -59,7 +59,10 @@ public class AlignCommand extends TeleopCommand {
 
         double yVel = driveSubsystem.getChassisSpeeds().vyMetersPerSecond;
 
-        rotation = rotation.plus(Rotation2d.fromDegrees(yVel*10));
+        Rotation2d turn = Rotation2d.fromDegrees(yVel*10);
+        if(turn.getDegrees() < -5) turn = Rotation2d.fromDegrees(-5);
+        if(5 < turn.getDegrees()) turn = Rotation2d.fromDegrees(5);
+        rotation = rotation.plus(turn);
 
         if(flip.getAsBoolean()) {
             return rotation;

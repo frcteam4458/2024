@@ -46,7 +46,7 @@ import frc.robot.commands.Intake;
 import frc.robot.commands.TeleopCommand;
 import frc.robot.commands.auto.AlignCommand;
 import frc.robot.commands.auto.Autos;
-import frc.robot.commands.auto.PIDAlign;
+import frc.robot.commands.auto.TrapAlign;
 import frc.robot.subsystems.ShooterLED;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIOSim;
@@ -147,6 +147,7 @@ public class RobotContainer {
     SmartDashboard.putNumber("Arm Angle", 0);
     
     ShooterLED.getInstance();
+    SmartDashboard.putNumber("Shooting Distance Offset", 0.045);
   }
 
 
@@ -158,6 +159,12 @@ public class RobotContainer {
       if(DriverStation.isAutonomous()) {
         arm.setSetpoint(20);
       }
+    }));
+
+    new Trigger(() -> {
+      return DriverStation.isTeleopEnabled() && isRed();
+    }).onTrue(Commands.runOnce(() -> {
+      // driveSubsystem.addGyroOffset();
     }));
 
     Commands.run(() -> {
@@ -189,7 +196,7 @@ public class RobotContainer {
       driveSubsystem.setCoast(!dio.get());
       arm.setCoast(!dio.get());
       feeder.setCoast(!dio.get());
-      ShooterLED.getInstance().coastbutton = false;
+      ShooterLED.getInstance().coastbutton = true;
     }).ignoringDisable(true));
 
     configureDriveSetpoints();
@@ -197,11 +204,12 @@ public class RobotContainer {
 
     operatorJoystick.button(XboxController.Button.kLeftBumper.value).onTrue(new InstantCommand(() -> {
       climb.set(false);
+      ShooterLED.getInstance().pistonClimb = true;
     }, climb));
 
     operatorJoystick.button(XboxController.Button.kRightBumper.value).onTrue(new InstantCommand(() -> {
       climb.set(true);
-      ShooterLED.getInstance().pistonClimb = true;
+      ShooterLED.getInstance().pistonClimb = false;
     }, climb));
 
     intakeCommandGroup = Commands.sequence(
@@ -261,6 +269,8 @@ public class RobotContainer {
             Translation2d robot = driveSubsystem.getPose().getTranslation();
             if(isRed()) speaker = GeometryUtil.flipFieldPosition(speaker);
             double dist = robot.getDistance(speaker);
+            dist += SmartDashboard.getNumber("Shooting Distance Offset", 0.045);
+            Logger.recordOutput("AimCommand/Shooting Distance Offset", SmartDashboard.getNumber("Shooting Distance Offset", 0.0));
             Logger.recordOutput("AimCommand/dist", dist);
 
             flywheel.setRPM(Interpolation.getRPM(dist));
@@ -336,16 +346,22 @@ public class RobotContainer {
     NamedCommands.registerCommand("ShootIntakeAim", shootIntakeAimCommand);
     NamedCommands.registerCommand("IntakeAim", intakeAim);
     
-    operatorJoystick.button(1).onTrue(shootCommand.asProxy().andThen(Commands.sequence(Commands.waitSeconds(0.1), Commands.runOnce(() -> {
+    operatorJoystick.axisGreaterThan(3, 0.25).onTrue(shootCommand.asProxy().andThen(Commands.sequence(Commands.waitSeconds(0.1), Commands.runOnce(() -> {
       intakeCommandGroup.schedule();
     }).asProxy())));
+
     commandGeneric.button(10).onTrue(shootCommand.asProxy().andThen(Commands.sequence(Commands.waitSeconds(0.1), Commands.runOnce(() -> {
       intakeCommandGroup.schedule();
     }).asProxy())));
+
     operatorJoystick.button(2).onTrue(intakeCommandGroup);
 
-    commandGeneric.button(8).onTrue(Commands.runOnce(() -> { arm.setStow(true); }));
-    commandGeneric.button(8).onFalse(Commands.runOnce(() -> { arm.setStow(false); }));
+    operatorJoystick.button(1).whileTrue(new TrapAlign(driveSubsystem, null, RobotContainer::isRed,
+    ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
+    ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD));
+
+    commandGeneric.button(8).onTrue(Commands.runOnce(() -> { arm.setStow(true); ShooterLED.getInstance().armDown = true; }));
+    commandGeneric.button(8).onFalse(Commands.runOnce(() -> { arm.setStow(false); ShooterLED.getInstance().armDown = false;}));
 
     commandGeneric.button(1).onTrue(Commands.runOnce(() -> {
       feeder.setLockMagnitude(1);
@@ -374,6 +390,14 @@ public class RobotContainer {
       yawCommand
     );
 
+    operatorJoystick.button(XboxController.Button.kX.value).onTrue(Commands.runOnce(() -> {
+      ShooterLED.getInstance().yawLock = true;
+    }));
+
+    operatorJoystick.button(XboxController.Button.kX.value).onFalse(Commands.runOnce(() -> {
+      ShooterLED.getInstance().yawLock = false;
+    }));
+
     operatorJoystick.pov(0).onTrue(Commands.runOnce(() -> {
       arm.setSpeakerMode(true);
       SmartDashboard.putBoolean("Speaker", true);
@@ -388,6 +412,7 @@ public class RobotContainer {
       arm.setSetpoint(45);
       if(aimCommand.isScheduled()) aimCommand.cancel();
     }));
+
 
     // commandGeneric.button(12).whileTrue(NamedCommands.getCommand("SpeakerAlign"));
     // commandGeneric.button(12).whileTrue(new SpeakerAlignCommand(driveSubsystem, visionSubsystem, RobotContainer::isRed, 5.0, 0, 0));
@@ -446,14 +471,14 @@ public class RobotContainer {
 
   // Helper method for binding odometry setpoints
   public void buttonTriggerPIDAlign(Trigger trigger, Pose2d target, BooleanSupplier flip, double p, double i, double d, double ap, double ai, double ad) {
-    trigger.whileTrue(new PIDAlign(driveSubsystem, target, flip, p, i, d, ap, ai, ad));
+    trigger.whileTrue(new TrapAlign(driveSubsystem, target, flip, p, i, d, ap, ai, ad));
   }
 
   public void configureDriveSetpoints() {
-    buttonTriggerPIDAlign(operatorJoystick.button(4), PositionConstants.kAmpPose, RobotContainer::isRed,
-      ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
-      ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
-    );
+    // buttonTriggerPIDAlign(operatorJoystick.button(4), PositionConstants.kAmpPose, RobotContainer::isRed,
+    //   ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
+    //   ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
+    // );
 
   }
 

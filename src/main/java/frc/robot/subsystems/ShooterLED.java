@@ -43,6 +43,8 @@ public class ShooterLED extends VirtualSubsystem {
   public boolean pistonClimb = false;
   public boolean autoFinished = false;
   public double autoFinishedTime = 0.0;
+  public double noteIntakeTime = 0.0;
+  public boolean setNoteTime = false;
 
   private Alliance alliance = Alliance.Blue;
   private boolean lastEnabledAuto = false;
@@ -59,7 +61,7 @@ public class ShooterLED extends VirtualSubsystem {
   private static final int length = 37;
   private static final double strobeFastDuration = 0.1;
   private static final double strobeSlowDuration = 0.2;
-  private static final double breathDuration = 1.0;
+  private static final double breathDuration = 0.5;
   private static final double rainbowCycleLength = 25.0;
   private static final double rainbowDuration = 0.25;
   private static final double waveExponent = 0.4;
@@ -97,6 +99,8 @@ public class ShooterLED extends VirtualSubsystem {
 
   public synchronized void periodic() {
     // Update alliance color
+    solid(0, Color.kBlack);
+
     if(DriverStation.getAlliance().isPresent())
      alliance = DriverStation.getAlliance().get();
     
@@ -125,7 +129,7 @@ public class ShooterLED extends VirtualSubsystem {
     // Select LED mode
     solid(Section.FULL, Color.kBlack); // Default to off
     if (estopped) {
-      solid(Section.FULL, Color.kRed);
+      solid(Section.FULL, Color.kDarkRed);
     } else if (DriverStation.isDisabled()) {
       if (lastEnabledAuto && Timer.getFPGATimestamp() - lastEnabledTime < autoFadeMaxTime) {
         // Auto fade
@@ -144,65 +148,52 @@ public class ShooterLED extends VirtualSubsystem {
           case Blue:
             wave(
                 Section.FULL,
-                Color.kBlue,
+                Color.kFirstBlue,
                 Color.kBlack,
                 waveAllianceCycleLength,
                 waveAllianceDuration);
             break;
           default:
-            wave(Section.FULL, Color.kGold, Color.kDarkBlue, waveSlowCycleLength, waveSlowDuration);
+            wave(Section.FULL, Color.kWhite, Color.kBlack, 1, waveSlowDuration);
             break;
         }
       }
      } else if (DriverStation.isAutonomous()) {
-        // wave(Section.FULL, Color.kWhite, RobotContainer.isBlue() ? Color.kBlue : Color.kRed, waveFastCycleLength, waveFastDuration);
-        // if (autoFinished) {
-        //   double fullTime = (double) length / waveFastCycleLength * waveFastDuration;
-        //   solid((Timer.getFPGATimestamp() - autoFinishedTime) / fullTime, Color.kGreen);
-        // }
-
-        switch (alliance) {
-          case Red:
-            wave(
-                Section.FULL,
-                Color.kRed,
-                Color.kBlack,
-                waveAllianceCycleLength,
-                waveAllianceDuration);
-            break;
-          case Blue:
-            wave(
-                Section.FULL,
-                Color.kBlue,
-                Color.kBlack,
-                waveAllianceCycleLength,
-                waveAllianceDuration);
-            break;
-          default:
-            wave(Section.FULL, Color.kGold, Color.kDarkBlue, waveSlowCycleLength, waveSlowDuration);
-            break;
+        wave(Section.FULL, Color.kWhite, RobotContainer.isBlue() ? Color.kFirstBlue : Color.kRed, waveFastCycleLength, waveFastDuration);
+        if (autoFinished) {
+          double fullTime = (double) length / waveFastCycleLength * waveFastDuration;
+          solid((Timer.getFPGATimestamp() - autoFinishedTime) / fullTime, Color.kGreen);
         }
     }
 
     if(DriverStation.isTeleop()) {
       if (pistonClimb) {
-        rainbow(Section.FULL, rainbowCycleLength, rainbowDuration);
+        wave(Section.FULL, Color.kWhite, Color.kBlack, 10,1);
       } else if (intakeReady) {
-        strobe(Section.FULL, alliance == Alliance.Blue ? Color.kDarkBlue : Color.kFirstRed, strobeSlowDuration);
+        solid(Section.FULL, alliance == Alliance.Blue ? Color.kFirstBlue : Color.kFirstRed);
       } else if (shoot) {
         rainbow(Section.FULL, rainbowCycleLength, rainbowDuration);
       } else if (yawLock) {
-        solid(Section.FULL, Color.kPurple);
+        strobe(Section.FULL, Color.kPurple, 0.5);
       } else if (aim) {
-        solid(Section.FULL, Color.kGreen);
+        strobe(Section.FULL, Color.kGreen, 0.5);
       } else if (noteAcquired) {
-        strobe(Section.FULL, Color.kWhite, strobeFastDuration);
+        if(!setNoteTime) noteIntakeTime = Timer.getFPGATimestamp();
+        setNoteTime = true;
+        if(noteIntakeTime + 1.0 > Timer.getFPGATimestamp()) {
+          strobe(Section.FULL, Color.kOrange, strobeFastDuration);
+        } else {
+          solid(100, Color.kOrange);
+        }
+
+      } else {
+        setNoteTime = false;
       }
     }
 
     // Arm coast alert
     if (coastbutton) {
-      solid(Section.FULL, Color.kWhite);
+      solid(Section.FULL, Color.kOrangeRed);
     }
 
     // Arm estop alert
@@ -234,9 +225,9 @@ public class ShooterLED extends VirtualSubsystem {
     solid(section, on ? color : Color.kBlack);
   }
 
-  // private void breath(Section section, Color c1, Color c2, double duration) {
-  //   breath(section, c1, c2, duration, Timer.getFPGATimestamp());
-  // }
+  private void breath(Section section, Color c1, Color c2, double duration) {
+    breath(section, c1, c2, duration, Timer.getFPGATimestamp());
+  }
 
   private void breath(Section section, Color c1, Color c2, double duration, double timestamp) {
     double x = ((timestamp % breathDuration) / breathDuration) * 2.0 * Math.PI;
@@ -280,15 +271,15 @@ public class ShooterLED extends VirtualSubsystem {
     }
   }
 
-  // private void stripes(Section section, List<Color> colors, int length, double duration) {
-  //   int offset = (int) (Timer.getFPGATimestamp() % duration / duration * length * colors.size());
-  //   for (int i = section.start(); i < section.end(); i++) {
-  //     int colorIndex =
-  //         (int) (Math.floor((double) (i - offset) / length) + colors.size()) % colors.size();
-  //     colorIndex = colors.size() - 1 - colorIndex;
-  //     buffer.setLED(i, colors.get(colorIndex));
-  //   }
-  // }
+  private void stripes(Section section, List<Color> colors, int length, double duration) {
+    int offset = (int) (Timer.getFPGATimestamp() % duration / duration * length * colors.size());
+    for (int i = section.start(); i < section.end(); i++) {
+      int colorIndex =
+          (int) (Math.floor((double) (i - offset) / length) + colors.size()) % colors.size();
+      colorIndex = colors.size() - 1 - colorIndex;
+      buffer.setLED(i, colors.get(colorIndex));
+    }
+  }
 
   private static enum Section {
     FULL;
