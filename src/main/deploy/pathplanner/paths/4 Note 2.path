@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 2.271155311541392,
-        "y": 4.490555305896938
+        "x": 2.393146604475027,
+        "y": 4.270394098982973
       },
       "prevControl": {
-        "x": 1.9539779499139414,
-        "y": 4.723773954152416
+        "x": 2.0759692428475764,
+        "y": 4.503612747238452
       },
       "nextControl": null,
       "isLocked": false,
@@ -38,12 +38,12 @@
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 0,
+    "velocity": 0.25,
     "rotation": -48.94518622903764,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Red 4 note",
   "previewStartingState": {
     "rotation": 1.8476102659945552,
     "velocity": 0

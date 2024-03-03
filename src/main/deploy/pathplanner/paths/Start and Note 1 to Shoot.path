@@ -3,45 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.88,
-        "y": 7.0
+        "x": 1.4057878828008366,
+        "y": 3.98770666487202
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.88,
-        "y": 7.0
+        "x": 1.3940937283583965,
+        "y": 2.9586210739373047
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 8.397003397332211,
-        "y": 7.439065519461206
+        "x": 8.31703315828284,
+        "y": 0.7484258843161573
       },
       "prevControl": {
-        "x": 7.488117008130862,
-        "y": 7.468384435241894
+        "x": 6.177002895316332,
+        "y": 1.052473899819595
       },
       "nextControl": {
-        "x": 9.305889786533557,
-        "y": 7.409746603680517
+        "x": 8.54063924351052,
+        "y": 0.7166567137373611
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.619621871072722,
-        "y": 5.645110007559683
+        "x": 2.5167325548326307,
+        "y": 2.993703537264625
       },
       "prevControl": {
-        "x": 3.6391213875064343,
-        "y": 5.6353602493428285
+        "x": 3.5282769141036856,
+        "y": 2.870914915619006
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Start and Note 1 to Shoot"
     }
   ],
   "rotationTargets": [],
@@ -55,14 +55,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 2.6630007660672903,
+    "rotation": -37.874983651098276,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "2 note top",
-  "previewStartingState": {
-    "rotation": 0,
-    "velocity": 0
-  },
-  "useDefaultConstraints": true
+  "folder": "Source Middle Notes",
+  "previewStartingState": null,
+  "useDefaultConstraints": false
 }

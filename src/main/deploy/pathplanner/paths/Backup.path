@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.542614357955989,
-        "y": 7.397695522663773
+        "x": 1.562422887316085,
+        "y": 3.2369197279962263
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.581753527143418,
-        "y": 7.071189415106104
+        "x": 2.5624228873160853,
+        "y": 2.7369197279962263
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.5312536079617614,
-        "y": 5.6438912877825755
+        "x": 7.519525157815163,
+        "y": 0.7507313826979205
       },
       "prevControl": {
-        "x": 4.622716881797411,
-        "y": 6.073013600572656
+        "x": 7.412277817429746,
+        "y": 0.779980657348488
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,20 +33,17 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.0,
-    "maxAcceleration": 2.0,
+    "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 3.1798301198641674,
+    "rotation": 0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "2 note top",
-  "previewStartingState": {
-    "rotation": 8.426969021480597,
-    "velocity": 0
-  },
-  "useDefaultConstraints": true
+  "folder": "Shoot Backup",
+  "previewStartingState": null,
+  "useDefaultConstraints": false
 }

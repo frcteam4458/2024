@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.6453682536994707,
-        "y": 6.607197259978566
+        "x": 2.7041172936761146,
+        "y": 6.502825225220857
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.688363612417461,
-        "y": 7.353496934396097
+        "x": 4.7471126523941045,
+        "y": 7.249124899638388
       },
       "isLocked": false,
       "linkedName": "4 Note 3"
     },
     {
       "anchor": {
-        "x": 7.591995582851565,
-        "y": 5.800300603450209
+        "x": 7.416583266214966,
+        "y": 5.940630456759489
       },
       "prevControl": {
-        "x": 6.360601120062639,
-        "y": 6.266737899961165
+        "x": 6.18518880342604,
+        "y": 6.407067753270446
       },
       "nextControl": null,
       "isLocked": false,
@@ -44,18 +44,18 @@
   ],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
+    "maxVelocity": 3.81,
     "maxAcceleration": 3.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 0,
+    "velocity": 0.0,
     "rotation": -25.14478563067884,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Red 4 note",
   "previewStartingState": {
     "rotation": -52.02839623894956,
     "velocity": 0

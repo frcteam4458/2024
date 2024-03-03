@@ -3,41 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.7853677607592755,
-        "y": 6.659084862112717
+        "x": 7.837572826142803,
+        "y": 4.1046482092964185
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.785367760759282,
-        "y": 6.159084862112717
+        "x": 8.837572826142804,
+        "y": 3.6046482092964185
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Start to Note 1"
     },
     {
       "anchor": {
-        "x": 7.812017904320845,
-        "y": 6.90282881753412
+        "x": 4.387797265623021,
+        "y": 3.0521743094768246
       },
       "prevControl": {
-        "x": 6.812017904320845,
-        "y": 7.90282881753412
+        "x": 5.299941312133336,
+        "y": 3.508246332731982
       },
       "nextControl": {
-        "x": 8.81201790432084,
-        "y": 5.90282881753412
+        "x": 3.122886201555671,
+        "y": 2.419718777443149
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.0,
-        "y": 1.0
+        "x": 2.76230979812387,
+        "y": 3.0521743094768246
       },
       "prevControl": {
-        "x": 6.75,
-        "y": 2.5
+        "x": 3.3236292113609864,
+        "y": 3.1340333905739035
       },
       "nextControl": null,
       "isLocked": false,
@@ -55,11 +55,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -37.694240466689095,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Middle Notes under Truss",
   "previewStartingState": null,
   "useDefaultConstraints": false
 }

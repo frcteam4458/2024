@@ -45,6 +45,7 @@ import frc.robot.commands.HeadingCommand;
 import frc.robot.commands.Intake;
 import frc.robot.commands.TeleopCommand;
 import frc.robot.commands.auto.AlignCommand;
+import frc.robot.commands.auto.AmpAlign;
 import frc.robot.commands.auto.Autos;
 import frc.robot.commands.auto.TrapAlign;
 import frc.robot.subsystems.ShooterLED;
@@ -93,6 +94,8 @@ public class RobotContainer {
   private Command parallelShootAim;
   private Command parallelShootAimIntake;
   private Command shootIntakeCommand;
+  
+  private Command shootNoAim;
 
   private Command yawCommand;
 
@@ -123,10 +126,13 @@ public class RobotContainer {
 
     String[] autos = new String[]{
       "4 Note Middle",
+      "Blue 4 Note",
       "Straight Line 3",
       "Source Side 3",
       "Middle 3",
-      "2 Note Top"
+      "2 Note Top",
+      "Backup",
+      "Source Middle"
     };
 
     autoChooser.setDefaultOption("Nothing", "Nothing");
@@ -188,12 +194,12 @@ public class RobotContainer {
     driveSubsystem.setDefaultCommand(teleopCommand);
 
     new Trigger(() -> {return dio.get();}).onTrue(Commands.runOnce(() -> {
-      driveSubsystem.setCoast(!dio.get());
+      // driveSubsystem.setCoast(!dio.get());
       arm.setCoast(!dio.get());
       feeder.setCoast(!dio.get());
       ShooterLED.getInstance().coastbutton = false;
     }).ignoringDisable(true)).onFalse(Commands.runOnce(() -> {
-      driveSubsystem.setCoast(!dio.get());
+      // driveSubsystem.setCoast(!dio.get());
       arm.setCoast(!dio.get());
       feeder.setCoast(!dio.get());
       ShooterLED.getInstance().coastbutton = true;
@@ -324,6 +330,40 @@ public class RobotContainer {
           if(interrupted) System.out.println("Shoot interrupted!!");
         });
 
+
+      shootNoAim = Commands.sequence(
+        Commands.runOnce(() -> {
+          Logger.recordOutput("ShootCommand/Running", true);
+          ShooterLED.getInstance().shoot = true;
+          // if(!aimCommand.isScheduled()) aimCommand.schedule();
+          if(intakeCommandGroup.isScheduled()) intakeCommand.cancel();
+          if(intakeCommand.isScheduled()) {
+            intakeCommand.cancel();
+            feeder.set(0);
+          }
+          ShooterLED.getInstance().pistonClimb = false;
+        }),
+        Commands.waitSeconds(0.2),
+        Commands.waitUntil(() -> {
+          return (Math.abs(arm.getSetpoint() - arm.getAngle()) < 1.0) && flywheel.atSetpoint();
+        }).asProxy(),
+        new InstantCommand(() -> {
+            feeder.set(ControlConstants.kFeederMagnitude);
+          }, feeder
+        ).asProxy(),
+        new WaitCommand(0.4),
+        new ProxyCommand(new InstantCommand(() -> {
+          if(aimCommand.isScheduled()) aimCommand.cancel();
+          feeder.set(0);
+          flywheel.setRPM(1000);
+        }, flywheel, feeder))).finallyDo((boolean interrupted) -> {
+          if(yawCommand.isScheduled()) yawCommand.cancel();
+          feeder.set(0);
+          Logger.recordOutput("ShootCommand/Running", false);
+          ShooterLED.getInstance().shoot = false;
+          if(interrupted) System.out.println("Shoot interrupted!!");
+        });
+
     aimShootCommand = Commands.sequence(aimCommand.asProxy(), shootCommand.asProxy());
 
     aimShootIntakeCommand = aimShootCommand.asProxy().andThen(Commands.runOnce(() -> {
@@ -346,7 +386,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("ShootIntakeAim", shootIntakeAimCommand);
     NamedCommands.registerCommand("IntakeAim", intakeAim);
     
-    operatorJoystick.axisGreaterThan(3, 0.25).onTrue(shootCommand.asProxy().andThen(Commands.sequence(Commands.waitSeconds(0.1), Commands.runOnce(() -> {
+    operatorJoystick.axisGreaterThan(3, 0.25).onTrue(shootNoAim.asProxy().andThen(Commands.sequence(Commands.waitSeconds(0.1), Commands.runOnce(() -> {
       intakeCommandGroup.schedule();
     }).asProxy())));
 
@@ -363,17 +403,20 @@ public class RobotContainer {
     commandGeneric.button(8).onTrue(Commands.runOnce(() -> { arm.setStow(true); ShooterLED.getInstance().armDown = true; }));
     commandGeneric.button(8).onFalse(Commands.runOnce(() -> { arm.setStow(false); ShooterLED.getInstance().armDown = false;}));
 
-    commandGeneric.button(1).onTrue(Commands.runOnce(() -> {
-      feeder.setLockMagnitude(1);
-      feeder.setLock(true);
-    }));
-    commandGeneric.button(2).onTrue(Commands.runOnce(() -> {
-      feeder.setLock(false);
-    }));
-    commandGeneric.button(3).onTrue(Commands.runOnce(() -> {
-      feeder.setLockMagnitude(-1);
-      feeder.setLock(false);
-    }));
+    operatorJoystick.axisGreaterThan(2, 0.25).onTrue(Commands.sequence(
+      Commands.runOnce(() -> {
+        arm.setSetpoint(10);
+        feeder.setLockMagnitude(-1);
+        feeder.setLock(true);
+      }),
+      Commands.waitSeconds(1),
+      Commands.runOnce(() -> {
+        feeder.setLock(false);
+        intakeCommandGroup.schedule();
+      })
+    ));
+
+
 
 
     commandGeneric.button(11).onTrue(new HeadingCommand(driveSubsystem, 0));
@@ -475,10 +518,9 @@ public class RobotContainer {
   }
 
   public void configureDriveSetpoints() {
-    // buttonTriggerPIDAlign(operatorJoystick.button(4), PositionConstants.kAmpPose, RobotContainer::isRed,
-    //   ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
-    //   ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD
-    // );
+    operatorJoystick.button(4).whileTrue(new AmpAlign(driveSubsystem, RobotContainer::isRed,
+    ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
+    ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD));
 
   }
 

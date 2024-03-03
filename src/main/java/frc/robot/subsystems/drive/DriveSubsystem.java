@@ -74,6 +74,7 @@ public class DriveSubsystem extends SubsystemBase {
     Logger.processInputs("DriveSubsystem", inputs);
 
     Logger.recordOutput("Odometry/Pose", getPose());
+    Logger.recordOutput("DriveSubsystem/GyroOffset", offset);
 
     robotPose = getPose();
 
@@ -108,10 +109,11 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void arcadeDriveFieldOriented(double x, double y, double omega) {
-    // if(RobotContainer.isRed()) {
-    //   x = -x;
-    //   y = -y;
-    // }
+    if(RobotContainer.isRed()) {
+      x = -x;
+      y = -y;
+    }
+    
     var speeds =
         ChassisSpeeds.fromFieldRelativeSpeeds(
             x * HardwareConstants.kMaxSpeed,
@@ -205,7 +207,7 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void addGyroOffset() {
-    this.offset += 180;
+    this.offset = 180;
   }
 
   public void setVisionOverride(boolean override) {

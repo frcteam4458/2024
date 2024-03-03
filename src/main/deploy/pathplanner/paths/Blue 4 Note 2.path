@@ -4,37 +4,31 @@
     {
       "anchor": {
         "x": 2.393146604475027,
-        "y": 4.270394098982973
+        "y": 5.541275082550166
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.9173805620338515,
-        "y": 4.998036281540066
+        "x": 2.327845382963493,
+        "y": 5.317385180224906
       },
       "isLocked": false,
-      "linkedName": "4 Note 2"
+      "linkedName": "4 Note 1"
     },
     {
       "anchor": {
-        "x": 2.7041172936761146,
-        "y": 6.502825225220857
+        "x": 2.393146604475027,
+        "y": 4.270394098982973
       },
       "prevControl": {
-        "x": 2.368282440188226,
-        "y": 5.961757961268147
+        "x": 1.0666574039700785,
+        "y": 4.420390379242297
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "4 Note 3"
+      "linkedName": "Blue 4 Note 2"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.5,
-      "rotationDegrees": 39.389909641680326,
-      "rotateFast": false
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -45,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0.25,
-    "rotation": 52.18426739242688,
-    "rotateFast": false
+    "rotation": -23.939899343098453,
+    "rotateFast": true
   },
   "reversed": false,
-  "folder": "Red 4 note",
+  "folder": "Blue 4 note",
   "previewStartingState": {
-    "rotation": -52.02839623894956,
+    "rotation": 1.8476102659945552,
     "velocity": 0
   },
   "useDefaultConstraints": false

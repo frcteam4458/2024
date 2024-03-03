@@ -40,6 +40,8 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
     for (int i = 0; i < 4; i++) {
       // swerveDrive.getModules()[i].setDriveMotorConversionFactor(0.0392120164);
       // swerveDrive.getModules()[i].setAngleMotorConversionFactor(28.125);
+      getMotor(i, 0).setIdleMode(IdleMode.kBrake);
+      getMotor(i, 1).setIdleMode(IdleMode.kBrake);
     }
     // swerveDrive.setHeadingCorrection(true);
     // SwerveDriveTelemetry.verbosity = SwerveDriveTelemetry.TelemetryVerbosity.NONE;
