@@ -23,6 +23,7 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonVersion;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.proto.Photon;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
@@ -34,6 +35,7 @@ public class VisionSubsystem extends SubsystemBase {
 
   PhotonCamera frontCamera;
   PhotonCamera backCamera;
+  PhotonCamera noteCamera;
 
   PhotonCameraSim frontCameraSim;
   PhotonCameraSim backCameraSim;
@@ -44,6 +46,8 @@ public class VisionSubsystem extends SubsystemBase {
   PhotonPipelineResult result;
   List<PhotonTrackedTarget> targets;
   PhotonTrackedTarget bestTarget;
+
+  Optional<PhotonTrackedTarget> note = Optional.empty();
 
   VisionSystemSim sim;
 
@@ -63,6 +67,7 @@ public class VisionSubsystem extends SubsystemBase {
 
     frontCamera = new PhotonCamera("Front");
     backCamera = new PhotonCamera("Back");
+    noteCamera = new PhotonCamera("Intake");
 
     if(Robot.isSimulation()) {
       sim = new VisionSystemSim("main");
@@ -109,6 +114,11 @@ public class VisionSubsystem extends SubsystemBase {
     estimatedPoseFront = frontPoseEstimator.update();
     estimatedPoseBack = backPoseEstimator.update();
 
+    result = noteCamera.getLatestResult();
+
+    if(result.hasTargets()) note = Optional.of(result.getBestTarget());
+    else note = Optional.empty();
+
     if(estimatedPoseFront.isPresent()) {
       Logger.recordOutput("Vision/EstimatedPoseFront", estimatedPoseFront.get().estimatedPose.toPose2d());
     }
@@ -130,8 +140,8 @@ public class VisionSubsystem extends SubsystemBase {
     return list;
   }
 
-  public PhotonTrackedTarget getBestTarget() {
-    return null;
+  public Optional<PhotonTrackedTarget> getBestTarget() {
+    return note;
   }
 
   public boolean hasTargets() {

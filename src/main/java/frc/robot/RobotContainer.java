@@ -47,6 +47,7 @@ import frc.robot.commands.TeleopCommand;
 import frc.robot.commands.auto.AlignCommand;
 import frc.robot.commands.auto.AmpAlign;
 import frc.robot.commands.auto.Autos;
+import frc.robot.commands.auto.NoteLock;
 import frc.robot.commands.auto.TrapAlign;
 import frc.robot.subsystems.ShooterLED;
 import frc.robot.subsystems.arm.Arm;
@@ -159,6 +160,11 @@ public class RobotContainer {
 
 
   private void configureBindings() {
+
+    operatorJoystick.button(XboxController.Button.kRightStick.value).whileTrue(
+      new NoteLock(driveSubsystem, visionSubsystem, null,
+      ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD)
+    );
     new Trigger(() -> {
       return DriverStation.isEnabled();
     }).onTrue(Commands.runOnce(() -> {
