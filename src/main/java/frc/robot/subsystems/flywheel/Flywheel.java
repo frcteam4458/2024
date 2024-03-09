@@ -6,10 +6,19 @@ package frc.robot.subsystems.flywheel;
 
 import org.littletonrobotics.junction.Logger;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Minutes;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.Volts;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Robot;
 import frc.robot.Constants.ControlConstants;
 
@@ -25,25 +34,49 @@ public class Flywheel extends SubsystemBase {
     PIDController bottomController;
 
     SimpleMotorFeedforward feedforward;
+    SimpleMotorFeedforward feedforwardBottom;
 
     GenericHID driver;
 
     double rpm = 0;
 
+    public SysIdRoutine sysIdRoutine;
+
     public Flywheel(FlywheelIO io) {
         this.io = io;
         topController = new PIDController(
-            ControlConstants.kFlywheelP,
-            ControlConstants.kFlywheelI,
-            ControlConstants.kFlywheelD);
+            0.0016201,
+            0,
+            0);
         bottomController = new PIDController(
-            ControlConstants.kFlywheelP,
-            ControlConstants.kFlywheelI,
-            ControlConstants.kFlywheelD);
+            0.0015057,
+            0,
+            0);
 
-        feedforward = new SimpleMotorFeedforward(0, ControlConstants.kFlywheelV);
+        feedforward = new SimpleMotorFeedforward(0, 0.0021186);
+        feedforwardBottom = new SimpleMotorFeedforward(0, 0.0021371);
 
         driver = new GenericHID(0);
+
+        sysIdRoutine = new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null, null, null,
+                (state) -> Logger.recordOutput("SysIdTestState", state.toString())
+            ),
+            new SysIdRoutine.Mechanism(
+                (Measure<Voltage> volts) -> {
+                    io.setTopVoltage(volts.in(Volts));
+                    io.setBottomVoltage(volts.in(Volts));
+                },
+                log -> {
+                log.motor("flywheel-top").voltage(Volts.of(inputs.topVoltage))
+                    .angularPosition(Rotations.of(inputs.topPosition))
+                    .angularVelocity(Rotations.of(inputs.topVelocity).per(Minutes.of(1)));
+
+                log.motor("flywheel-bottom").voltage(Volts.of(inputs.bottomVoltage))
+                    .angularPosition(Rotations.of(inputs.bottomPosition))
+                    .angularVelocity(Rotations.of(inputs.bottomVelocity).per(Minutes.of(1)));
+        }, this));
     }
 
     @Override
@@ -73,7 +106,7 @@ public class Flywheel extends SubsystemBase {
             Logger.recordOutput("Flywheel/TopOutput", topOutput + feedforward.calculate(rpm));
             Logger.recordOutput("Flywheel/BottomOutput", bottomOutput + feedforward.calculate(rpm));
             io.setTopVoltage(topOutput + feedforward.calculate(rpm));
-            io.setBottomVoltage(bottomOutput + feedforward.calculate(rpm));
+            io.setBottomVoltage(bottomOutput + feedforwardBottom.calculate(rpm));
         }
     }
 

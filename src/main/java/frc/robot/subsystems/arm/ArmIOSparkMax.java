@@ -47,15 +47,15 @@ public class ArmIOSparkMax implements ArmIO {
 
     @Override
     public void updateInputs(ArmIOInputs inputs) {
-        inputs.voltage = armMotor.get() * RobotController.getBatteryVoltage();
+        inputs.voltage = (armMotor.getAppliedOutput() * armMotor.getBusVoltage() + armMotorFollower.getAppliedOutput() * armMotorFollower.getBusVoltage()) / 2;
         inputs.angle = armEncoder.getPosition();
         inputs.absoluteAngle = getAngle();
     }
 
     @Override
     public void setVoltage(double volts) {
-        // armMotor.setVoltage(volts);
-        // armMotorFollower.setVoltage(volts);
+        armMotor.setVoltage(volts);
+        armMotorFollower.setVoltage(volts);
     }
 
     @Override

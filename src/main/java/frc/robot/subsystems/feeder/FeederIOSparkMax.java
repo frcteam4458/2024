@@ -34,7 +34,7 @@ public class FeederIOSparkMax implements FeederIO {
 
         feeder.restoreFactoryDefaults();
         feeder.setSmartCurrentLimit(20);
-        encoder.setPositionConversionFactor(0.05);
+        encoder.setPositionConversionFactor(1.0/16.0);
         feeder.setOpenLoopRampRate(0);
         feeder.setClosedLoopRampRate(0);
 
@@ -48,7 +48,7 @@ public class FeederIOSparkMax implements FeederIO {
 
     @Override
     public void updateInputs(FeederIOInputs inputs) {
-        inputs.voltage = feeder.get() * RobotController.getBatteryVoltage();
+        inputs.voltage = feeder.getAppliedOutput() * feeder.getBusVoltage();
         inputs.value = feeder.get();
         inputs.current = feeder.getOutputCurrent();
         inputs.rpm = encoder.getVelocity();

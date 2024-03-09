@@ -133,7 +133,12 @@ public class RobotContainer {
       "Middle 3",
       "2 Note Top",
       "Backup",
-      "Source Middle"
+      "Source Middle",
+
+      "Quasistatic Forward",
+      "Quasistatic Backward",
+      "Dynamic Forward",
+      "Dynamic Backward",
     };
 
     autoChooser.setDefaultOption("Nothing", "Nothing");
@@ -320,7 +325,7 @@ public class RobotContainer {
           return (Math.abs(arm.getSetpoint() - arm.getAngle()) < 1.0) && flywheel.atSetpoint();
         }).asProxy(),
         new InstantCommand(() -> {
-            feeder.set(ControlConstants.kFeederMagnitude);
+            feeder.set(0.8);
           }, feeder
         ).asProxy(),
         new WaitCommand(0.4),
@@ -354,7 +359,7 @@ public class RobotContainer {
           return (Math.abs(arm.getSetpoint() - arm.getAngle()) < 1.0) && flywheel.atSetpoint();
         }).asProxy(),
         new InstantCommand(() -> {
-            feeder.set(ControlConstants.kFeederMagnitude);
+            feeder.set(0.8);
           }, feeder
         ).asProxy(),
         new WaitCommand(0.4),
@@ -473,13 +478,13 @@ public class RobotContainer {
     System.out.println("Auto Selected: " + autoChooser.getSelected());
     driveSubsystem.driveChassisSpeeds(new ChassisSpeeds(0, 0, 0));
     if(autoChooser.getSelected().equalsIgnoreCase("Quasistatic Forward")) {
-      return driveSubsystem.sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward);
+      return flywheel.sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward);
     } else if(autoChooser.getSelected().equalsIgnoreCase("Quasistatic Backward")) {
-      return driveSubsystem.sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse);
+      return flywheel.sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse);
     } else if(autoChooser.getSelected().equalsIgnoreCase("Dynamic Forward")) {
-      return driveSubsystem.sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward);
+      return flywheel.sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward);
     } else if(autoChooser.getSelected().equalsIgnoreCase("Dynamic Backward")) {
-      return driveSubsystem.sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse);
+      return flywheel.sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse);
     } else if(autoChooser.getSelected().equalsIgnoreCase("Nothing")) {
       return Commands.none();
     } else {  

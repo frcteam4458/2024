@@ -31,6 +31,7 @@ public class ArmIOSim extends ArmIOSparkMax {
             true,
             0.0
         );
+        System.out.println("Arm MOI: " + SingleJointedArmSim.estimateMOI(HardwareConstants.kArmLength, HardwareConstants.kArmMass));
     }
 
     @Override

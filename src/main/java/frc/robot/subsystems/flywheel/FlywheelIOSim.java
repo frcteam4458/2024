@@ -19,6 +19,8 @@ public class FlywheelIOSim implements FlywheelIO {
     double topVoltage = 0.0;
     double bottomVoltage = 0.0;
 
+    // CANSparkMax topFlywheelMotor = new CANSparkMax()
+
     public FlywheelIOSim() {
         topFlywheel = new FlywheelSim(DCMotor.getNEO(1), 1.0, 0.002);
         bottomFlywheel = new FlywheelSim(DCMotor.getNEO(1), 1.0, 0.002);

@@ -35,11 +35,17 @@ public class FlywheelIOSparkMax implements FlywheelIO {
 
     @Override
     public void updateInputs(FlywheelIOInputs inputs) {
-        inputs.topVoltage = topMotor.get() * RobotController.getBatteryVoltage();
-        inputs.bottomVoltage = bottomMotor.get() * RobotController.getBatteryVoltage();
+        inputs.topVoltage = topMotor.getAppliedOutput() * topMotor.getBusVoltage();
+        inputs.bottomVoltage = bottomMotor.getAppliedOutput() * bottomMotor.getBusVoltage();
 
         inputs.topVelocity = topEncoder.getVelocity();
         inputs.bottomVelocity = bottomEncoder.getVelocity();
+
+        inputs.topPosition = topEncoder.getPosition();
+        inputs.bottomPosition = bottomEncoder.getPosition();
+
+        inputs.topBusVoltage = topMotor.getBusVoltage();
+        inputs.bottomBusVoltage = bottomMotor.getBusVoltage();
     }
 
     @Override

@@ -38,27 +38,33 @@ public class AmpAlign extends TeleopCommand {
         xController = new PIDController(p, i, d);
         yawController = new PIDController(ap, ai, ad);
         yawController.enableContinuousInput(-Math.PI, Math.PI);
-        yawController.setSetpoint(Math.PI / 2.0);
+        yawController.setSetpoint(-Math.PI / 2.0);
         this.flip = flip;
     }
 
     @Override   
     public void execute() {
         var translation = flip.getAsBoolean() ? GeometryUtil.flipFieldPosition(PositionConstants.kAmpPose.getTranslation()) : PositionConstants.kAmpPose.getTranslation();
+        Logger.recordOutput("AmpAlign/TargetX", translation.getX());
         xController.setSetpoint(translation.getX());
         super.execute();
     }
 
     @Override
-    public double getX() {
-        return xController.calculate(driveSubsystem.getPose().getX());
+    public double getY() {
+        double output = xController.calculate(driveSubsystem.getPose().getX());
+        if(output < -0.1) output = -0.1;
+        if(0.1 < output) output = 0.1;
+        Logger.recordOutput("AmpAlign/PoseX", driveSubsystem.getPose().getX());
+        Logger.recordOutput("AmpAlign/OutputX", output);
+        return output;
     }
 
     @Override
     public double getOmega() {
-        double output = yawController.calculate(driveSubsystem.getPose().getRotation().getRadians());;
-        if(output < -0.25) output = -0.25;
-        if(0.25 < output) output = 0.25;
+        double output = yawController.calculate(driveSubsystem.getPose().getRotation().getRadians());
+        if(output < -0.1) output = -0.1;
+        if(0.1 < output) output = 0.1;
         Logger.recordOutput("Align Output", output);
         return output;
     }

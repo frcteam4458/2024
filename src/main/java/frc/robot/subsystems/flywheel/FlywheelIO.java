@@ -14,6 +14,11 @@ public interface FlywheelIO {
         double bottomVoltage = 0.0;
         double topVelocity = 0.0;
         double bottomVelocity = 0.0;
+        double topPosition = 0.0;
+        double bottomPosition = 0.0;
+        
+        double topBusVoltage = 0.0;
+        double bottomBusVoltage = 0.0;
     }
 
     public default void updateInputs(FlywheelIOInputs inputs) {}

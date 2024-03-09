@@ -76,9 +76,9 @@ public final class Constants {
     public static final double kFlywheelI = 0.0;
     public static final double kFlywheelD = 0.0;
 
-    public static final double kFlywheelS = 0.0;
-    public static final double kFlywheelV = 0.00215;
-    public static final double kFlywheelA = 0.0;
+    public static final double kFlywheelS = 0.0; // 0.24791
+    public static final double kFlywheelV = 0.00215; // 0.0021186 old - 0.00215
+    public static final double kFlywheelA = 0.0; // 0.001204
 
     public static final double kFeederP = 7.5;
     // public static final double kBottomStopRotations = 3;
@@ -118,14 +118,15 @@ public final class Constants {
     public static final double kYOriginToArm = 0.203;
     public static final double kZOriginToArm = 0.279;
     
-    public static final double kArmAbsoluteEncoderOffset = 0.555;
+    public static final double kArmAbsoluteEncoderOffset = 0.882;
 
-    public static final double kArmRotPhysicalMin = 0;
+    public static final double kArmRotPhysicalMin = -0.5;
     public static final double kArmRotPhysicalMax = 97;
 
     // Drivetrain Limits
     public static final double kMaxSpeed = 3.81;
-    public static final double kMaxAngVel = 12; // experimental value
+    public static final double kMaxAngVel = 24; // experimental value
+
     public static final double kDriveBaseRadius = Units.inchesToMeters(16.2822464359);
     public static final double kDriveGearing = 10.71; // this is just not true anymore, but for YAGSL gearing is stored in the deploy json
     public static final double kMOI = 7.5; // unmeasured, arbitrary value

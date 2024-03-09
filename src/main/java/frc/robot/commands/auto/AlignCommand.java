@@ -35,7 +35,7 @@ public class AlignCommand extends TeleopCommand {
         super(driveSubsystem);
         this.driveSubsystem = driveSubsystem;
         this.visionSubsystem = visionSubsystem;
-        yawController = new PIDController(ap, ai, ad);
+        yawController = new PIDController(0.5, ai, 0.025);
         profiledYawController = new ProfiledPIDController(ap, ai, ad, new TrapezoidProfile.Constraints(0.05, 0.01));
         yawController.enableContinuousInput(-Math.PI, Math.PI);
         profiledYawController.enableContinuousInput(-Math.PI, Math.PI);
@@ -60,6 +60,7 @@ public class AlignCommand extends TeleopCommand {
         double yVel = driveSubsystem.getChassisSpeeds().vyMetersPerSecond;
 
         Rotation2d turn = Rotation2d.fromDegrees(yVel*10);
+        turn = Rotation2d.fromDegrees(0);
         if(turn.getDegrees() < -5) turn = Rotation2d.fromDegrees(-5);
         if(5 < turn.getDegrees()) turn = Rotation2d.fromDegrees(5);
         rotation = rotation.plus(turn);

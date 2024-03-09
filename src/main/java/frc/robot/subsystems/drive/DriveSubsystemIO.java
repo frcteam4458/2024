@@ -14,21 +14,25 @@ public interface DriveSubsystemIO {
     public double flVelocity = 0.0;
     public double flVolts = 0.0;
     public double flAmps = 0.0;
+    public double flTemp = 0.0;
 
     public double frPosition = 0.0;
     public double frVelocity = 0.0;
     public double frVolts = 0.0;
     public double frAmps = 0.0;
+    public double frTemp = 0.0;
 
     public double blPosition = 0.0;
     public double blVelocity = 0.0;
     public double blVolts = 0.0;
     public double blAmps = 0.0;
+    public double blTemp = 0.0;
 
     public double brPosition = 0.0;
     public double brVelocity = 0.0;
     public double brVolts = 0.0;
     public double brAmps = 0.0;
+    public double brTemp = 0.0;
 
     public double flAnglePosition = 0.0;
     public double flAngleVelocity = 0.0;

@@ -52,7 +52,7 @@ public class TeleopCommand extends Command {
   public double getX() {
     double filteredX = 0.0; // Forward/backward
     if (!Robot.isReal()) filteredX = filterX.calculate(-genericController.getRawAxis(1)); // Simulated axis
-    else filteredX = filterX.calculate(-controller.getLeftY()); // Real axis
+    else filteredX = -controller.getLeftY(); // Real axis
     if (Math.abs(filteredX) < 0.01) filteredX = 0; // Deadzone
     return filteredX;
   }
@@ -60,7 +60,7 @@ public class TeleopCommand extends Command {
   public double getY() {
     double filteredY = 0.0;
     if (!Robot.isReal()) filteredY = filterY.calculate(-genericController.getRawAxis(0));
-    else filteredY = filterY.calculate(-controller.getLeftX());
+    else filteredY = -controller.getLeftX();
     if (Math.abs(filteredY) < 0.01) filteredY = 0;
     return filteredY;
   }
