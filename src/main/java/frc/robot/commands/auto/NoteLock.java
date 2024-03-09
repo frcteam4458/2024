@@ -8,32 +8,62 @@ import java.util.function.BooleanSupplier;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.pathplanner.lib.util.GeometryUtil;
+
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import frc.robot.Constants.PositionConstants;
+import frc.robot.commands.TeleopCommand;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
 /** Add your docs here. */
-public class NoteLock extends AlignCommand {
+public class NoteLock extends TeleopCommand {
+    PIDController yawController;
+    BooleanSupplier flip;
+    DriveSubsystem driveSubsystem;
+    VisionSubsystem visionSubsystem;
 
-    public NoteLock(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, BooleanSupplier flip, double ap,
-            double ai, double ad) {
-        super(driveSubsystem, visionSubsystem, flip, ap, ai, ad);
+    int targetId = 7;
+
+    Rotation2d angle;
+
+    public NoteLock(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, BooleanSupplier flip, double ap, double ai, double ad) {
+        super(driveSubsystem);
+        this.driveSubsystem = driveSubsystem;
+        this.visionSubsystem = visionSubsystem;
+        yawController = new PIDController(0.5, ai, 0.025);
+        yawController.enableContinuousInput(-Math.PI, Math.PI);
+        this.flip = flip;
     }
 
-    @Override
+
     public Rotation2d getAngle(DriveSubsystem driveSubsystem, BooleanSupplier flip) {
         if(visionSubsystem.getBestTarget().isPresent()) {
-            var note = visionSubsystem.getBestTarget().get();
-
-            Logger.recordOutput("NoteLock/Note Yaw", note.getYaw());
+            return Rotation2d.fromDegrees(driveSubsystem.getPose().getRotation().getDegrees() + visionSubsystem.getBestTarget().get().getYaw());
+        } else {
+            return driveSubsystem.getPose().getRotation();
         }
+    }
 
-        return driveSubsystem.getPose().getRotation();
+    @Override   
+    public void execute() {
+        yawController.setSetpoint(MathUtil.angleModulus(getAngle(driveSubsystem, flip).getRadians()));
+        Logger.recordOutput("Yaw Diff", getAngle(driveSubsystem, flip));
+        super.execute();
     }
 
     @Override
     public double getOmega() {
-        return 0;
+        double output = yawController.calculate(driveSubsystem.getPose().getRotation().getRadians());
+        if(output < -0.25) output = -0.25;
+        if(0.25 < output) output = 0.25;
+        Logger.recordOutput("Align Output", output);
+        return output;
     }
     
 }
