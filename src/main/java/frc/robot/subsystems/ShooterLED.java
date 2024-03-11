@@ -181,9 +181,9 @@ public class ShooterLED extends VirtualSubsystem {
         if(!setNoteTime) noteIntakeTime = Timer.getFPGATimestamp();
         setNoteTime = true;
         if(noteIntakeTime + 1.0 > Timer.getFPGATimestamp()) {
-          strobe(Section.FULL, Color.kOrange, strobeFastDuration);
+          strobe(Section.FULL, Color.kOrangeRed, strobeFastDuration);
         } else {
-          solid(100, Color.kOrange);
+          solid(100, Color.kOrangeRed);
         }
 
       } else {

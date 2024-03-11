@@ -1,0 +1,49 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 8.3053390038404,
+        "y": 7.414093916506922
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 7.591995582851563,
+        "y": 7.191904982100564
+      },
+      "isLocked": false,
+      "linkedName": "Blue 4 note #5"
+    },
+    {
+      "anchor": {
+        "x": 2.972804578087788,
+        "y": 6.420090788899527
+      },
+      "prevControl": {
+        "x": 4.01358432346495,
+        "y": 6.782609576615165
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 13.70696100407983,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "Red 4 note",
+  "previewStartingState": null,
+  "useDefaultConstraints": false
+}

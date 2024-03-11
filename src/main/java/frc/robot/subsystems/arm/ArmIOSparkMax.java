@@ -37,7 +37,7 @@ public class ArmIOSparkMax implements ArmIO {
             HardwareConstants.kArmPositionConversionFactor);
 
         absoluteEncoder = new DutyCycleEncoder(HardwareConstants.kArmAbsoluteEncoder);
-        absoluteEncoder.setPositionOffset(HardwareConstants.kArmAbsoluteEncoderOffset);
+        absoluteEncoder.setPositionOffset(HardwareConstants.kArmAbsoluteEncoderOffset + (1.0 / 360.0));
         absoluteEncoder.setDistancePerRotation(360);
 
         armMotor.setInverted(false);

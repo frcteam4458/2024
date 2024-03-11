@@ -16,19 +16,46 @@
     },
     {
       "anchor": {
-        "x": 7.416583266214966,
-        "y": 5.940630456759489
+        "x": 8.3053390038404,
+        "y": 7.414093916506922
       },
       "prevControl": {
-        "x": 6.18518880342604,
-        "y": 6.407067753270446
+        "x": 8.083150069434042,
+        "y": 7.542729615373762
+      },
+      "nextControl": {
+        "x": 8.611638754906544,
+        "y": 7.236762481679152
+      },
+      "isLocked": false,
+      "linkedName": "Blue 4 note #5"
+    },
+    {
+      "anchor": {
+        "x": 3.7329246168463843,
+        "y": 5.6482765956984915
+      },
+      "prevControl": {
+        "x": 4.177302485659102,
+        "y": 6.583808951093687
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.55,
+      "rotationDegrees": 0,
+      "rotateFast": true
+    },
+    {
+      "waypointRelativePos": 0.65,
+      "rotationDegrees": 5.0,
+      "rotateFast": true
+    }
+  ],
   "constraintZones": [
     {
       "name": "New Constraints Zone",
@@ -51,7 +78,7 @@
   },
   "goalEndState": {
     "velocity": 0.0,
-    "rotation": -25.14478563067884,
+    "rotation": 0.0,
     "rotateFast": false
   },
   "reversed": false,

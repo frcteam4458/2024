@@ -44,6 +44,7 @@ public class Arm extends SubsystemBase {
     boolean stow = false;
 
     boolean speakerMode = true;
+    boolean lobMode = false;
 
     public Arm(ArmIO io) {
         this.io = io;
@@ -98,7 +99,7 @@ public class Arm extends SubsystemBase {
             double output = 0.0;
             if(stow) {
                 if(!DriverStation.isDisabled())
-                profiledPIDController.setGoal(5);
+                profiledPIDController.setGoal(10);
             } else {
                 profiledPIDController.setGoal(setpoint);
             }
@@ -193,6 +194,14 @@ public class Arm extends SubsystemBase {
 
     public boolean getSpeakerMode() {
         return speakerMode;
+    }
+
+    public void setLobMode(boolean lob) {
+        this.lobMode = lob;
+    }
+
+    public boolean getLobMode() {
+        return lobMode;
     }
 
     public void setCoast(boolean coast) {

@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Robot;
@@ -29,6 +30,9 @@ import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
+
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 /** Add your docs here. */
 public class VisionSubsystem extends SubsystemBase {
@@ -57,13 +61,15 @@ public class VisionSubsystem extends SubsystemBase {
   Transform3d robotToFrontCamera;
   Transform3d robotToBackCamera;
 
+  boolean rotationOverride = false;
+
   public VisionSubsystem() {
     Logger.recordOutput("PV", PhotonVersion.versionString);
-    robotToFrontCamera = new Transform3d(Units.inchesToMeters(-9.5),
-      0, Units.inchesToMeters(17.25), new Rotation3d(0, Units.degreesToRadians(-15), Units.degreesToRadians(0)));
+    robotToFrontCamera = new Transform3d(-0.225948,
+      Units.inchesToMeters(0.125), 0.451592, new Rotation3d(0, Units.degreesToRadians(-30), Units.degreesToRadians(0)));
 
-    robotToBackCamera = new Transform3d(Units.inchesToMeters(-10.915),
-      0, Units.inchesToMeters(17.25), new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(180)));
+    robotToBackCamera = new Transform3d(-0.278422,
+      Units.inchesToMeters(0.125), 0.450133, new Rotation3d(0, Units.degreesToRadians(-25), Units.degreesToRadians(180)));
 
     frontCamera = new PhotonCamera("Front");
     backCamera = new PhotonCamera("Back");
@@ -107,6 +113,19 @@ public class VisionSubsystem extends SubsystemBase {
     } catch (Exception e) {
       e.printStackTrace();
     }
+
+    PPHolonomicDriveController.setRotationTargetOverride(() -> {
+      if(rotationOverride) return Optional.of(getNoteRotation());
+      return Optional.empty();
+    });
+
+    NamedCommands.registerCommand("Note Lock", Commands.runOnce(() -> {
+      rotationOverride = true;
+    }));
+
+    NamedCommands.registerCommand("Note Unlock", Commands.runOnce(() -> {
+      rotationOverride = false;
+    }));
   }
 
   @Override
@@ -160,4 +179,18 @@ public class VisionSubsystem extends SubsystemBase {
   public double distanceToTarget(PhotonTrackedTarget target) {
     return Math.sqrt(Math.pow(target.getBestCameraToTarget().getX(), 2) + Math.pow(target.getBestCameraToTarget().getY(), 2)); 
   }
+
+  public void setRotationTargetOverride(boolean val) {
+    rotationOverride = val;
+  }
+
+  public boolean getRotationTargetOVerride() {
+    return rotationOverride;
+  }
+
+  public Rotation2d getNoteRotation() {
+    if(getBestTarget().isEmpty()) return DriveSubsystem.robotPose.getRotation();
+    return DriveSubsystem.robotPose.getRotation().plus(Rotation2d.fromDegrees(getBestTarget().get().getYaw()));
+  }
 }
+  

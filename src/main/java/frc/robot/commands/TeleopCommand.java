@@ -5,6 +5,7 @@
 package frc.robot.commands;
 
 
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
@@ -22,6 +23,8 @@ public class TeleopCommand extends Command {
   SlewRateLimiter filterX;
   SlewRateLimiter filterY;
 
+  Debouncer joystickDebouncer;
+
   // boolean fieldOrinted = true;
   CommandXboxController commandXboxController;
 
@@ -34,6 +37,8 @@ public class TeleopCommand extends Command {
     addRequirements(driveSubsystem);
     filterX = new SlewRateLimiter(OperatorConstants.kDriveRateLimit);
     filterY = new SlewRateLimiter(OperatorConstants.kDriveRateLimit);
+
+    joystickDebouncer = new Debouncer(0.5);
   }
 
   @Override
@@ -42,7 +47,20 @@ public class TeleopCommand extends Command {
   }
 
   @Override
-  public void execute() {  
+  public void execute() {
+    double x = getX();
+    double y = getY();
+    double omega = getOmega();
+    boolean lock = false;
+
+    // if((Math.abs(x) < 0.01) && (Math.abs(y) < 0.01) && (Math.abs(omega) < 0.01)) lock = joystickDebouncer.calculate(true);
+    // else lock = joystickDebouncer.calculate(false);
+
+    if(lock) {
+      driveSubsystem.lock();
+      return;
+    }
+
     if(genericController.getRawButton(5))
       driveSubsystem.arcadeDriveFieldOriented(getX(), getY(), getOmega());
     else

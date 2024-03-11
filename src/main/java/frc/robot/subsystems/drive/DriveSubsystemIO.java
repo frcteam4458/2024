@@ -84,4 +84,6 @@ public interface DriveSubsystemIO {
   public default void setCoast(boolean coast) {}
 
   public default void resetGyro(Rotation3d rotation) {}
+  
+  public default void lock(boolean lock) {}
 }

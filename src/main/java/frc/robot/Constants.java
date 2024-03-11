@@ -118,9 +118,9 @@ public final class Constants {
     public static final double kYOriginToArm = 0.203;
     public static final double kZOriginToArm = 0.279;
     
-    public static final double kArmAbsoluteEncoderOffset = 0.882;
+    public static final double kArmAbsoluteEncoderOffset = 0.052;
 
-    public static final double kArmRotPhysicalMin = -0.5;
+    public static final double kArmRotPhysicalMin = -1.5;
     public static final double kArmRotPhysicalMax = 97;
 
     // Drivetrain Limits

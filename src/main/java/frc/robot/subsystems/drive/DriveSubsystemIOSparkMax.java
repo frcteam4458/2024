@@ -3,6 +3,8 @@ package frc.robot.subsystems.drive;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkBase.IdleMode;
 
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -21,6 +23,8 @@ import swervelib.parser.SwerveParser;
 
 public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
   SwerveDrive swerveDrive;
+
+  Debouncer lockDebouncer;
   // CANSparkMax fl, fr, bl, br;
   // RelativeEncoder encoderFl, encoderFr, encoderBl, encoderBr;
   // MotorControllerGroup left, right;
@@ -46,6 +50,9 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
     // swerveDrive.setHeadingCorrection(true);
     // SwerveDriveTelemetry.verbosity = SwerveDriveTelemetry.TelemetryVerbosity.NONE;
     // swerveDrive.driveFieldOriented();
+
+    lockDebouncer = new Debouncer(1.0, DebounceType.kBoth);
+    
   }
 
   @Override
@@ -115,6 +122,9 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
       inputs.blAnglePosition, inputs.blVelocity,
       inputs.brAnglePosition, inputs.brVelocity
     });
+
+    Logger.recordOutput("DriveSubsystem/vxmps", swerveDrive.getFieldVelocity().vxMetersPerSecond);
+    Logger.recordOutput("DriveSubsystem/vymps", swerveDrive.getFieldVelocity().vyMetersPerSecond);
   }
 
   /**
@@ -129,7 +139,8 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
 
   @Override
   public void drive(ChassisSpeeds speeds) {
-    swerveDrive.chassisVelocityCorrection = true;
+    // swerveDrive.lockPose();
+    swerveDrive.chassisVelocityCorrection = false;
     swerveDrive.setHeadingCorrection(true);
     swerveDrive.drive(speeds);
   }
@@ -138,7 +149,9 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
   public void driveFieldOriented(ChassisSpeeds speeds) {
     swerveDrive.chassisVelocityCorrection = false;
     swerveDrive.setHeadingCorrection(true);
-    swerveDrive.setChassisSpeeds(speeds);
+    swerveDrive.drive(speeds);
+
+    
   }
 
   /**
@@ -206,4 +219,8 @@ public class DriveSubsystemIOSparkMax implements DriveSubsystemIO {
     swerveDrive.setGyro(rotation);
   }
 
+  @Override
+  public void lock(boolean lock) {
+    swerveDrive.lockPose();
+  }
 }

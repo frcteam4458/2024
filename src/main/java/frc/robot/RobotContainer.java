@@ -9,8 +9,10 @@ import java.util.function.BooleanSupplier;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.GeometryUtil;
 
 import edu.wpi.first.math.MathUtil;
@@ -21,6 +23,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -28,6 +31,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -47,6 +51,7 @@ import frc.robot.commands.TeleopCommand;
 import frc.robot.commands.auto.AlignCommand;
 import frc.robot.commands.auto.AmpAlign;
 import frc.robot.commands.auto.Autos;
+import frc.robot.commands.auto.LobAlign;
 import frc.robot.commands.auto.NoteLock;
 import frc.robot.commands.auto.TrapAlign;
 import frc.robot.subsystems.ShooterLED;
@@ -99,6 +104,7 @@ public class RobotContainer {
   private Command shootNoAim;
 
   private Command yawCommand;
+  private Command lobCommand;
 
   private SendableChooser<String> autoChooser = new SendableChooser<String>();
 
@@ -134,6 +140,8 @@ public class RobotContainer {
       "2 Note Top",
       "Backup",
       "Source Middle",
+      "5 Center Choreo",
+      "Gerald",
 
       "Quasistatic Forward",
       "Quasistatic Backward",
@@ -148,6 +156,7 @@ public class RobotContainer {
 
     SmartDashboard.putData("Autonomous Chooser", autoChooser);
 
+
     dio = new DigitalInput(3);
 
     configureBindings();
@@ -159,17 +168,18 @@ public class RobotContainer {
     SmartDashboard.putNumber("Arm Angle", 0);
     
     ShooterLED.getInstance();
-    SmartDashboard.putNumber("Shooting Distance Offset", 0.045);
+    SmartDashboard.putNumber("Shooting Distance Offset", 0.0);
   }
 
 
 
   private void configureBindings() {
 
-    operatorJoystick.button(XboxController.Button.kRightStick.value).whileTrue(
-      new NoteLock(driveSubsystem, visionSubsystem, null,
+    operatorJoystick.button(XboxController.Button.kA.value).whileTrue(
+      new NoteLock(driveSubsystem, visionSubsystem, RobotContainer::isRed,
       ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD)
     );
+    
     new Trigger(() -> {
       return DriverStation.isEnabled();
     }).onTrue(Commands.runOnce(() -> {
@@ -197,7 +207,7 @@ public class RobotContainer {
     }));
 
     yawCommand = new AlignCommand(driveSubsystem, visionSubsystem, RobotContainer::isRed, ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD);
-
+    lobCommand = new LobAlign(driveSubsystem, visionSubsystem, RobotContainer::isRed, ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD);
     // Commands.run(() -> {
     //   if(DriverStation.isEnabled()) return;
       
@@ -237,7 +247,7 @@ public class RobotContainer {
         if(shootCommand.isScheduled()) shootCommand.cancel();
         if(aimShootIntakeCommand.isScheduled()) aimShootIntakeCommand.cancel();
         if(aimShootCommand.isScheduled()) aimShootCommand.cancel();
-        arm.setSetpoint(0);
+        arm.setSetpoint(-1);
       }).asProxy()).asProxy().andThen(Commands.sequence(
       Commands.parallel(
         new Intake(feeder).asProxy(),
@@ -276,12 +286,19 @@ public class RobotContainer {
           if(intakeCommandGroup.isScheduled()) intakeCommandGroup.cancel();
         }),
         Commands.sequence(Commands.run(() -> {
+            if(arm.getLobMode()) {
+              arm.setSetpoint(25);
+              flywheel.setRPM(3500);
+              return;
+            }
+
             if(!arm.getSpeakerMode()) {
               arm.setSetpoint(100);
               flywheel.setRPM(1000);
+          
               return;
             }
-            
+
             Translation2d speaker = PositionConstants.kSpeakerPosition.plus(new Translation2d(0.5, 0));
             Translation2d robot = driveSubsystem.getPose().getTranslation();
             if(isRed()) speaker = GeometryUtil.flipFieldPosition(speaker);
@@ -292,6 +309,8 @@ public class RobotContainer {
 
             flywheel.setRPM(Interpolation.getRPM(dist));
             arm.setSetpoint(Interpolation.getAngle(dist));
+            // flywheel.setRPM(SmartDashboard.getNumber("Flywheel RPM", 0.0));
+            // arm.setSetpoint(SmartDashboard.getNumber("Arm Angle", 0.0));
           })
         )
     ).finallyDo((boolean interrupted) -> {
@@ -318,14 +337,16 @@ public class RobotContainer {
             intakeCommand.cancel();
             feeder.set(0);
           }
+          // if(arm.getLobMode() && !yawCommand.isScheduled()) yawCommand.schedule();
           ShooterLED.getInstance().pistonClimb = false;
         }),
         Commands.waitSeconds(0.2),
         Commands.waitUntil(() -> {
+          // if(arm.getLobMode() && !((AlignCommand)yawCommand).atSetpoint()) return false;
           return (Math.abs(arm.getSetpoint() - arm.getAngle()) < 1.0) && flywheel.atSetpoint();
         }).asProxy(),
         new InstantCommand(() -> {
-            feeder.set(0.8);
+            feeder.set(1.0);
           }, feeder
         ).asProxy(),
         new WaitCommand(0.4),
@@ -359,7 +380,7 @@ public class RobotContainer {
           return (Math.abs(arm.getSetpoint() - arm.getAngle()) < 1.0) && flywheel.atSetpoint();
         }).asProxy(),
         new InstantCommand(() -> {
-            feeder.set(0.8);
+            feeder.set(1.0);
           }, feeder
         ).asProxy(),
         new WaitCommand(0.4),
@@ -407,10 +428,6 @@ public class RobotContainer {
 
     operatorJoystick.button(2).onTrue(intakeCommandGroup);
 
-    operatorJoystick.button(1).whileTrue(new TrapAlign(driveSubsystem, null, RobotContainer::isRed,
-    ControlConstants.kP, ControlConstants.kI, ControlConstants.kD,
-    ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD));
-
     commandGeneric.button(8).onTrue(Commands.runOnce(() -> { arm.setStow(true); ShooterLED.getInstance().armDown = true; }));
     commandGeneric.button(8).onFalse(Commands.runOnce(() -> { arm.setStow(false); ShooterLED.getInstance().armDown = false;}));
 
@@ -441,7 +458,8 @@ public class RobotContainer {
     }));
     
     operatorJoystick.button(XboxController.Button.kX.value).whileTrue(
-      yawCommand
+      // yawCommand
+      new ConditionalCommand(lobCommand, yawCommand, () -> { return arm.getLobMode(); })
     );
 
     operatorJoystick.button(XboxController.Button.kX.value).onTrue(Commands.runOnce(() -> {
@@ -454,16 +472,29 @@ public class RobotContainer {
 
     operatorJoystick.pov(0).onTrue(Commands.runOnce(() -> {
       arm.setSpeakerMode(true);
+      arm.setLobMode(false);
       SmartDashboard.putBoolean("Speaker", true);
       SmartDashboard.putBoolean("Amp", false);
+        SmartDashboard.putBoolean("Lob", false);
       if(aimCommand.isScheduled()) aimCommand.cancel();
     }));
 
     operatorJoystick.pov(180).onTrue(Commands.runOnce(() -> {
       arm.setSpeakerMode(false);
+      arm.setLobMode(false);
       SmartDashboard.putBoolean("Speaker", false);
       SmartDashboard.putBoolean("Amp", true);
+      SmartDashboard.putBoolean("Lob", false);
       arm.setSetpoint(45);
+      if(aimCommand.isScheduled()) aimCommand.cancel();
+    }));
+
+    operatorJoystick.pov(90).or(operatorJoystick.pov(270)).onTrue(Commands.runOnce(() -> {
+      arm.setSpeakerMode(false);
+      arm.setLobMode(true);
+      SmartDashboard.putBoolean("Speaker", false);
+      SmartDashboard.putBoolean("Amp", false);
+      SmartDashboard.putBoolean("Lob", true);
       if(aimCommand.isScheduled()) aimCommand.cancel();
     }));
 
@@ -489,6 +520,7 @@ public class RobotContainer {
       return Commands.none();
     } else {  
       return new PathPlannerAuto(autoChooser.getSelected());
+
       // return AutoBuilder.buildAuto(autoChooser.getSelected()).andThen(Commands.runOnce(() -> { driveSubsystem.arcadeDrive(0, 0, 0); }));
     }
   }

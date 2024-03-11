@@ -35,11 +35,12 @@ public class AlignCommand extends TeleopCommand {
         super(driveSubsystem);
         this.driveSubsystem = driveSubsystem;
         this.visionSubsystem = visionSubsystem;
-        yawController = new PIDController(0.5, ai, 0.025);
+        yawController = new PIDController(0.5, ai, 0.01); // 0.5 0.025
         profiledYawController = new ProfiledPIDController(ap, ai, ad, new TrapezoidProfile.Constraints(0.05, 0.01));
         yawController.enableContinuousInput(-Math.PI, Math.PI);
         profiledYawController.enableContinuousInput(-Math.PI, Math.PI);
         this.flip = flip;
+        yawController.setTolerance(Math.toRadians(5), 1);
     }
 
     public Rotation2d getAngle(DriveSubsystem driveSubsystem, BooleanSupplier flip) {
@@ -72,6 +73,10 @@ public class AlignCommand extends TeleopCommand {
         }
     }
 
+    public boolean atSetpoint() {
+        return yawController.atSetpoint();
+    }
+
     @Override   
     public void execute() {
         yawController.setSetpoint(MathUtil.angleModulus(getAngle(driveSubsystem, flip).getRadians()));
@@ -86,6 +91,12 @@ public class AlignCommand extends TeleopCommand {
         if(0.25 < output) output = 0.25;
         Logger.recordOutput("Align Output", output);
         return output;
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        
+        super.end(interrupted);
     }
     
 }

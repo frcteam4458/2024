@@ -1,0 +1,49 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.386927239412675,
+        "y": 2.93
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.3966769976295312,
+        "y": 2.9444269814905426
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.08,
+        "y": 2.93
+      },
+      "prevControl": {
+        "x": 3.0638856527119245,
+        "y": 2.9151777068399753
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Gerald 1"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 4.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -39.55000000000001,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "Gerald",
+  "previewStartingState": null,
+  "useDefaultConstraints": false
+}

@@ -16,6 +16,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.PositionConstants;
 import frc.robot.commands.TeleopCommand;
 import frc.robot.subsystems.drive.DriveSubsystem;
@@ -36,15 +37,19 @@ public class NoteLock extends TeleopCommand {
         super(driveSubsystem);
         this.driveSubsystem = driveSubsystem;
         this.visionSubsystem = visionSubsystem;
-        yawController = new PIDController(0.5, ai, 0.025);
+        yawController = new PIDController(0.1, ai, 0.0);
         yawController.enableContinuousInput(-Math.PI, Math.PI);
         this.flip = flip;
+        SmartDashboard.putNumber("NKP", 0.1);
+        SmartDashboard.putNumber("NKI", 0.0);
+        SmartDashboard.putNumber("NKD", 0.0);
     }
 
 
     public Rotation2d getAngle(DriveSubsystem driveSubsystem, BooleanSupplier flip) {
         if(visionSubsystem.getBestTarget().isPresent()) {
-            return Rotation2d.fromDegrees(driveSubsystem.getPose().getRotation().getDegrees() + visionSubsystem.getBestTarget().get().getYaw());
+            Logger.recordOutput("Note Lock/Note Yaw", visionSubsystem.getBestTarget().get().getYaw());
+            return Rotation2d.fromDegrees(driveSubsystem.getPose().getRotation().getDegrees() - visionSubsystem.getBestTarget().get().getYaw());
         } else {
             return driveSubsystem.getPose().getRotation();
         }
@@ -52,18 +57,28 @@ public class NoteLock extends TeleopCommand {
 
     @Override   
     public void execute() {
+        yawController.setP(SmartDashboard.getNumber("NKP", 0.1));
+        yawController.setI(SmartDashboard.getNumber("NKI", 0.0));
+        yawController.setD(SmartDashboard.getNumber("NKD", 0.0));
+
         yawController.setSetpoint(MathUtil.angleModulus(getAngle(driveSubsystem, flip).getRadians()));
-        Logger.recordOutput("Yaw Diff", getAngle(driveSubsystem, flip));
+        Logger.recordOutput("Note Lock/Yaw Diff", getAngle(driveSubsystem, flip));
         super.execute();
     }
 
     @Override
     public double getOmega() {
+        if(!visionSubsystem.getBestTarget().isPresent()) {
+            return super.getOmega();
+        }
         double output = yawController.calculate(driveSubsystem.getPose().getRotation().getRadians());
-        if(output < -0.25) output = -0.25;
-        if(0.25 < output) output = 0.25;
-        Logger.recordOutput("Align Output", output);
+        if(output < -0.4) output = -0.4;
+        if(0.4 < output) output = 0.4;
+        Logger.recordOutput("Note Lock/Align Output", output);
+        // output = 0;
         return output;
     }
+
+    
     
 }

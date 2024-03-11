@@ -213,4 +213,8 @@ public class DriveSubsystem extends SubsystemBase {
   public void setVisionOverride(boolean override) {
     this.visionOverride = override;
   }
+
+  public void lock() {
+    io.lock(true);
+  }
 }
