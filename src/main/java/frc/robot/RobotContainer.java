@@ -515,7 +515,7 @@ public class RobotContainer {
       SmartDashboard.putBoolean("Speaker", false);
       SmartDashboard.putBoolean("Amp", true);
       SmartDashboard.putBoolean("Lob", false);
-      arm.setSetpoint(45);
+      arm.setSetpoint(80);
       if(aimCommand.isScheduled()) aimCommand.cancel();
     }));
 
