@@ -2,29 +2,42 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.38,
-      "y": 4.14
+      "x": 0.7364067435264587,
+      "y": 4.384410858154297
     },
-    "rotation": 0.0
+    "rotation": -60.461247102293854
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": null
+            "name": "Shoot"
           }
         },
         {
-          "type": "wait",
+          "type": "parallel",
           "data": {
-            "waitTime": 0.1
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Center Subwoofer.1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake"
+                }
+              }
+            ]
           }
         },
         {
-          "type": "race",
+          "type": "parallel",
           "data": {
             "commands": [
               {
@@ -49,7 +62,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": null
+                  "pathName": "Center Subwoofer.2"
                 }
               },
               {
@@ -62,7 +75,7 @@
           }
         },
         {
-          "type": "race",
+          "type": "parallel",
           "data": {
             "commands": [
               {
@@ -87,7 +100,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": null
+                  "pathName": "Center Subwoofer.3"
                 }
               },
               {
@@ -100,13 +113,51 @@
           }
         },
         {
-          "type": "race",
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "SpeakerAlign"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Shoot"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": null
+                  "pathName": "Center Subwoofer.4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Center Subwoofer.5"
                 }
               },
               {
@@ -122,7 +173,7 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "Aim"
+                        "name": "SpeakerAlign"
                       }
                     }
                   ]
@@ -132,40 +183,14 @@
           }
         },
         {
-          "type": "race",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "Shoot"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": null
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Intake"
-                }
-              }
-            ]
+            "name": "Shoot"
           }
         }
       ]
     }
   },
-  "folder": null,
-  "choreoAuto": false
+  "folder": "Finger Lakes",
+  "choreoAuto": true
 }

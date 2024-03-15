@@ -40,9 +40,6 @@ public class NoteLock extends TeleopCommand {
         yawController = new PIDController(0.1, ai, 0.0);
         yawController.enableContinuousInput(-Math.PI, Math.PI);
         this.flip = flip;
-        SmartDashboard.putNumber("NKP", 0.1);
-        SmartDashboard.putNumber("NKI", 0.0);
-        SmartDashboard.putNumber("NKD", 0.0);
     }
 
 
@@ -57,10 +54,6 @@ public class NoteLock extends TeleopCommand {
 
     @Override   
     public void execute() {
-        yawController.setP(SmartDashboard.getNumber("NKP", 0.1));
-        yawController.setI(SmartDashboard.getNumber("NKI", 0.0));
-        yawController.setD(SmartDashboard.getNumber("NKD", 0.0));
-
         yawController.setSetpoint(MathUtil.angleModulus(getAngle(driveSubsystem, flip).getRadians()));
         Logger.recordOutput("Note Lock/Yaw Diff", getAngle(driveSubsystem, flip));
         super.execute();

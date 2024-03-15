@@ -146,6 +146,10 @@ public class DriveSubsystem extends SubsystemBase {
     return io.getChassisSpeeds();
   }
 
+  public ChassisSpeeds getChassisSpeedsFieldOriented() {
+    return null;
+  }
+
   // Getters / Setters
 
   public void setPose(double x, double y, double yaw) {

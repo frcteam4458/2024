@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.38,
-      "y": 4.14
+      "x": 1.4649253051475237,
+      "y": 2.5
     },
-    "rotation": 0.0
+    "rotation": -90.0
   },
   "command": {
     "type": "sequential",
@@ -14,13 +14,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": null
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.1
+            "pathName": "Source Side 1"
           }
         },
         {
@@ -43,13 +37,13 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "race",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": null
+                  "pathName": "Source Side 2"
                 }
               },
               {
@@ -81,32 +75,13 @@
           }
         },
         {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": null
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Intake"
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "race",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": null
+                  "pathName": "Source Side 3"
                 }
               },
               {
@@ -114,9 +89,15 @@
                 "data": {
                   "commands": [
                     {
+                      "type": "named",
+                      "data": {
+                        "name": "Intake"
+                      }
+                    },
+                    {
                       "type": "wait",
                       "data": {
-                        "waitTime": 2.0
+                        "waitTime": 1.25
                       }
                     },
                     {
@@ -138,26 +119,13 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Shoot"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": null
+                  "name": "SpeakerAlign"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "Intake"
+                  "name": "Shoot"
                 }
               }
             ]
@@ -166,6 +134,6 @@
       ]
     }
   },
-  "folder": null,
+  "folder": "Finger Lakes",
   "choreoAuto": false
 }

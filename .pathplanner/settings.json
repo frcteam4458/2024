@@ -6,16 +6,19 @@
     "2 note top",
     "4",
     "Blue 4 note",
+    "Gerald",
     "Middle Notes under Truss",
+    "Source Side 3",
     "Red 4 note",
     "Right 3 note",
     "Shoot Backup",
     "Source Middle Notes",
     "Source Side",
-    "Straight Line",
-    "Gerald"
+    "Straight Line"
   ],
-  "autoFolders": [],
+  "autoFolders": [
+    "Finger Lakes"
+  ],
   "defaultMaxVel": 3.0,
   "defaultMaxAccel": 3.0,
   "defaultMaxAngVel": 540.0,

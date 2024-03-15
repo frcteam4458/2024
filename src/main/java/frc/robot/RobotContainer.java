@@ -18,6 +18,7 @@ import com.pathplanner.lib.util.GeometryUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -47,6 +48,7 @@ import frc.robot.Constants.PositionConstants;
 import frc.robot.commands.ArmSetpoint;
 import frc.robot.commands.HeadingCommand;
 import frc.robot.commands.Intake;
+import frc.robot.commands.NamedWait;
 import frc.robot.commands.TeleopCommand;
 import frc.robot.commands.auto.AlignCommand;
 import frc.robot.commands.auto.AmpAlign;
@@ -134,19 +136,12 @@ public class RobotContainer {
     String[] autos = new String[]{
       "4 Note Middle",
       "Blue 4 Note",
-      "Straight Line 3",
-      "Source Side 3",
-      "Middle 3",
-      "2 Note Top",
-      "Backup",
-      "Source Middle",
-      "5 Center Choreo",
-      "Gerald",
 
-      "Quasistatic Forward",
-      "Quasistatic Backward",
-      "Dynamic Forward",
-      "Dynamic Backward",
+      "Source Side",
+      "CenterSub",
+      "AmpSub",
+      "SourceSub",
+      "keebler"
     };
 
     autoChooser.setDefaultOption("Nothing", "Nothing");
@@ -166,9 +161,16 @@ public class RobotContainer {
 
     SmartDashboard.putNumber("Flywheel RPM", 0);
     SmartDashboard.putNumber("Arm Angle", 0);
+    SmartDashboard.putNumber("Note Velocity", 1.0);
+    SmartDashboard.putNumber("Lob RPM", 3000.0);
+    SmartDashboard.putNumber("Lob Angle", 25.0);
     
     ShooterLED.getInstance();
-    SmartDashboard.putNumber("Shooting Distance Offset", 0.0);
+    SmartDashboard.putNumber("Shooting Distance Offset", 0.173); // NYRO value (its 0 in the library)
+    SmartDashboard.putBoolean("SOTF", false);
+    SmartDashboard.putBoolean("Strict Shooting", true);
+    SmartDashboard.putNumber("Named Wait Duration", 0.0);
+    NamedCommands.registerCommand("Named Wait", new NamedWait());
   }
 
 
@@ -179,7 +181,15 @@ public class RobotContainer {
       new NoteLock(driveSubsystem, visionSubsystem, RobotContainer::isRed,
       ControlConstants.kAP, ControlConstants.kAI, ControlConstants.kAD)
     );
+
+    SmartDashboard.putData("Blue Subwoofer Reset", Commands.runOnce(() -> {
+      driveSubsystem.setPose(new Pose2d(new Translation2d(1.35, 5.5), Rotation2d.fromDegrees(0)));
+    }));
     
+    SmartDashboard.putData("Red Subwoofer Reset", Commands.runOnce(() -> {
+      driveSubsystem.setPose(new Pose2d(GeometryUtil.flipFieldPosition(new Translation2d(1.35, 5.5)), Rotation2d.fromDegrees(180)));
+    }));
+
     new Trigger(() -> {
       return DriverStation.isEnabled();
     }).onTrue(Commands.runOnce(() -> {
@@ -287,8 +297,8 @@ public class RobotContainer {
         }),
         Commands.sequence(Commands.run(() -> {
             if(arm.getLobMode()) {
-              arm.setSetpoint(25);
-              flywheel.setRPM(3500);
+              arm.setSetpoint(SmartDashboard.getNumber("Lob Angle", 25));
+              flywheel.setRPM(SmartDashboard.getNumber("Lob RPM", 3000));
               return;
             }
 
@@ -302,10 +312,28 @@ public class RobotContainer {
             Translation2d speaker = PositionConstants.kSpeakerPosition.plus(new Translation2d(0.5, 0));
             Translation2d robot = driveSubsystem.getPose().getTranslation();
             if(isRed()) speaker = GeometryUtil.flipFieldPosition(speaker);
+
             double dist = robot.getDistance(speaker);
-            dist += SmartDashboard.getNumber("Shooting Distance Offset", 0.045);
+
+            // SOTF
+            if(SmartDashboard.getBoolean("SOTF", false)) {
+              double x = speaker.getX();
+              double y = speaker.getY();
+              
+              double noteVel = SmartDashboard.getNumber("Note Velocity", 1.0);
+              var chassisSpeeds = driveSubsystem.getChassisSpeeds();
+              // Logger.recordOutput("vx", chassisSpeeds.vxMetersPerSecond);
+              x += (chassisSpeeds.vxMetersPerSecond * (dist / noteVel));
+              y += (chassisSpeeds.vyMetersPerSecond * (dist / noteVel));
+
+              Translation2d adjustedSpeaker = new Translation2d(x, y);
+              dist = robot.getDistance(adjustedSpeaker);
+            }
+
+            dist += SmartDashboard.getNumber("Shooting Distance Offset", 0.0);
             Logger.recordOutput("AimCommand/Shooting Distance Offset", SmartDashboard.getNumber("Shooting Distance Offset", 0.0));
             Logger.recordOutput("AimCommand/dist", dist);
+            arm.setAimProfile(true);
 
             flywheel.setRPM(Interpolation.getRPM(dist));
             arm.setSetpoint(Interpolation.getAngle(dist));
@@ -314,6 +342,7 @@ public class RobotContainer {
           })
         )
     ).finallyDo((boolean interrupted) -> {
+      arm.setAimProfile(false);
       Logger.recordOutput("AimCommand/Running", false);
 
       driveSubsystem.setVisionOverride(false);
@@ -340,9 +369,10 @@ public class RobotContainer {
           // if(arm.getLobMode() && !yawCommand.isScheduled()) yawCommand.schedule();
           ShooterLED.getInstance().pistonClimb = false;
         }),
-        Commands.waitSeconds(0.2),
+        Commands.waitSeconds(0.1),
         Commands.waitUntil(() -> {
           // if(arm.getLobMode() && !((AlignCommand)yawCommand).atSetpoint()) return false;
+          if(!SmartDashboard.getBoolean("Strict Shooting", true)) return true;
           return (Math.abs(arm.getSetpoint() - arm.getAngle()) < 1.0) && flywheel.atSetpoint();
         }).asProxy(),
         new InstantCommand(() -> {

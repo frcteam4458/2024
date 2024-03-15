@@ -4,10 +4,13 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.PositionConstants;
 import frc.robot.subsystems.VirtualSubsystem;
+import frc.robot.subsystems.drive.DriveSubsystem;
 
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -25,7 +28,7 @@ public class Robot extends LoggedRobot {
   public void robotInit() {
     if (Robot.isReal()) {
       Logger.addDataReceiver(new WPILOGWriter("/media/sda1"));
-      Logger.addDataReceiver(new NT4Publisher());
+      // Logger.addDataReceiver(new NT4Publisher());
     } else {
       Logger.addDataReceiver(new NT4Publisher());
     }
@@ -41,6 +44,13 @@ public class Robot extends LoggedRobot {
 
     Logger.recordOutput("Battery Voltage", RobotController.getBatteryVoltage());
     VirtualSubsystem.periodicAll();
+
+    Translation2d speaker = PositionConstants.kSpeakerPosition.plus(new Translation2d(0.5, 0));
+            Translation2d robot = DriveSubsystem.robotPose.getTranslation();
+
+            double dist = robot.getDistance(speaker);
+
+    Logger.recordOutput("dist", dist);
   }
 
   @Override

@@ -124,8 +124,8 @@ public class Arm extends SubsystemBase {
     
     public void setSetpoint(double angle) {
         setpoint = angle;
-        if(Math.abs(setpoint - angle) < 5) profiledPIDController.setConstraints(new TrapezoidProfile.Constraints(500, 500));
-        else profiledPIDController.setConstraints(profile);
+        // if(Math.abs(setpoint - angle) < 5) profiledPIDController.setConstraints(new TrapezoidProfile.Constraints(500, 500));
+        // profiledPIDController.setConstraints(profile);
         if(setpoint < HardwareConstants.kArmRotPhysicalMin) {
             setpoint = HardwareConstants.kArmRotPhysicalMin;
         }
@@ -212,4 +212,8 @@ public class Arm extends SubsystemBase {
         return io.getCoast(motor);
     }
 
+    public void setAimProfile(boolean keebler) {
+        if(keebler) profiledPIDController.setConstraints(new TrapezoidProfile.Constraints(400, 400));
+        else profiledPIDController.setConstraints(profile);
+    }
 }

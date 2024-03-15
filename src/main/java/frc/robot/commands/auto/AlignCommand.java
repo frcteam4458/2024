@@ -16,6 +16,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.PositionConstants;
 import frc.robot.commands.TeleopCommand;
 import frc.robot.subsystems.drive.DriveSubsystem;
@@ -35,12 +36,17 @@ public class AlignCommand extends TeleopCommand {
         super(driveSubsystem);
         this.driveSubsystem = driveSubsystem;
         this.visionSubsystem = visionSubsystem;
-        yawController = new PIDController(0.5, ai, 0.01); // 0.5 0.025
-        profiledYawController = new ProfiledPIDController(ap, ai, ad, new TrapezoidProfile.Constraints(0.05, 0.01));
+        yawController = new PIDController(0.3, ai, 0.0); // 0.5 0.025
+        profiledYawController = new ProfiledPIDController(0.5, 0, 0, new TrapezoidProfile.Constraints(4, 1));
         yawController.enableContinuousInput(-Math.PI, Math.PI);
         profiledYawController.enableContinuousInput(-Math.PI, Math.PI);
         this.flip = flip;
         yawController.setTolerance(Math.toRadians(5), 1);
+        // SmartDashboard.putNumber("KP", 0.5);
+        // SmartDashboard.putNumber("KI", 0.0);
+        // SmartDashboard.putNumber("KD", 0.0);
+        // SmartDashboard.putNumber("MaxVel", 0.0);
+        // SmartDashboard.putNumber("MaxAccel", 0.0);
     }
 
     public Rotation2d getAngle(DriveSubsystem driveSubsystem, BooleanSupplier flip) {
@@ -79,7 +85,16 @@ public class AlignCommand extends TeleopCommand {
 
     @Override   
     public void execute() {
+
+        // yawController.setP(SmartDashboard.getNumber("KP", 0.5));
+        // yawController.setI(SmartDashboard.getNumber("KI", 0.0));
+        // yawController.setD(SmartDashboard.getNumber("KD", 0.0));
+        // profiledYawController.setConstraints(
+        //     new TrapezoidProfile.Constraints(SmartDashboard.getNumber("MaxVel", 0.0),
+        //     SmartDashboard.getNumber("MaxAccel", 0.0)));
+
         yawController.setSetpoint(MathUtil.angleModulus(getAngle(driveSubsystem, flip).getRadians()));
+        profiledYawController.setGoal(MathUtil.angleModulus(getAngle(driveSubsystem, flip).getRadians()));
         Logger.recordOutput("Yaw Diff", getAngle(driveSubsystem, flip));
         super.execute();
     }
@@ -87,6 +102,7 @@ public class AlignCommand extends TeleopCommand {
     @Override
     public double getOmega() {
         double output = yawController.calculate(driveSubsystem.getPose().getRotation().getRadians());;
+        // output = prof    iledYawController.calculate(driveSubsystem.getPose().getRotation().getRadians());;
         if(output < -0.25) output = -0.25;
         if(0.25 < output) output = 0.25;
         Logger.recordOutput("Align Output", output);

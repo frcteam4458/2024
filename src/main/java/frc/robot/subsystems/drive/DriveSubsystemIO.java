@@ -76,6 +76,10 @@ public interface DriveSubsystemIO {
     return null;
   }
 
+  public default ChassisSpeeds getChassisSpeedsFieldOriented() {
+    return null;
+  }
+
   public default void addVisionMeasurement(Pose3d pose, double timestamp) {}
 
   public default void setPose(Pose2d pose) {}

@@ -31,7 +31,7 @@ public final class Constants {
 
   public static class PositionConstants {
     public static final Pose2d kAmpPose = new Pose2d(1.85, 7.7, Rotation2d.fromDegrees(270));
-    public static final double kAmpArmAngle = 1.640;
+    public static final double kAmpArmAngle = 1.745;
 
     public static final Rotation2d kSourceRotation = Rotation2d.fromRadians(-2.075);
     public static final Pose2d kSource1Pose = new Pose2d(1.75, 0.675, kSourceRotation);
@@ -121,7 +121,7 @@ public final class Constants {
     public static final double kArmAbsoluteEncoderOffset = 0.052;
 
     public static final double kArmRotPhysicalMin = -1.5;
-    public static final double kArmRotPhysicalMax = 97;
+    public static final double kArmRotPhysicalMax = 100;
 
     // Drivetrain Limits
     public static final double kMaxSpeed = 3.81;
